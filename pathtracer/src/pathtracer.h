@@ -3,7 +3,7 @@
 
 #define ILLUM 2
 #define ADAPTIVE 1
-#define THIN_LENS 1
+#define THIN_LENS 0
 
 #include <stack>
 #include <thread>
