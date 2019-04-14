@@ -61,6 +61,8 @@ namespace CGL {
   }
 
   Spectrum PathTracer::one_bounce_radiance(const Ray&r, const Intersection& isect) {
+    if (direct_hemisphere_sample)
+      return estimate_direct_lighting_hemisphere(r, isect);
     return estimate_direct_lighting_importance(r, isect);
   }
 

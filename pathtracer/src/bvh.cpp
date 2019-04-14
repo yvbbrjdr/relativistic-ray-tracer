@@ -100,6 +100,10 @@ bool BVHAccel::intersect(const Ray& ray, BVHNode *node) const {
 }
 
 bool BVHAccel::intersect(const Ray& ray, Intersection* i, BVHNode *node) const {
+  return intersect_micro(ray, i, node);
+}
+
+bool BVHAccel::intersect_micro(const Ray& ray, Intersection* i, BVHNode *node) const {
   double _;
   if (!node->bb.intersect(ray, _, _))
     return false;
