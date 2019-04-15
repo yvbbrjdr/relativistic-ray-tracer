@@ -19,9 +19,9 @@ class Primitive;
  */
 struct Intersection {
 
-  Intersection() : t (INF_D), primitive(NULL), bsdf(NULL) { }
+  Intersection() : primitive(NULL), bsdf(NULL) { }
 
-  double t;    ///< time of intersection
+  Vector3D hit_p;
 
   const Primitive* primitive;  ///< the primitive intersected
 

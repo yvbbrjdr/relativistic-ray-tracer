@@ -18,6 +18,7 @@ if(BUILD_3-1)
         dynamic_scene/sphere.cpp
 
         # Static scene
+        static_scene/blackhole.cpp
         static_scene/object.cpp
         static_scene/environment_light.cpp
         static_scene/light.cpp

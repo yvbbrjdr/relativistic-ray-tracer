@@ -2,6 +2,7 @@
 
 #include "CGL/CGL.h"
 #include "static_scene/triangle.h"
+#include "static_scene/blackhole.h"
 
 #include <iostream>
 #include <stack>
@@ -100,7 +101,16 @@ bool BVHAccel::intersect(const Ray& ray, BVHNode *node) const {
 }
 
 bool BVHAccel::intersect(const Ray& ray, Intersection* i, BVHNode *node) const {
-  return intersect_micro(ray, i, node);
+  BlackHole b(nullptr, Vector3D(0, 0, 0), 0.4, 0.01);
+  Ray micro_ray(ray.o, ray.d, 0.0);
+  for (int j = 0; j * b.delta_theta < 2 * M_PI; ++j) {
+    micro_ray = b.next_micro_ray(micro_ray);
+    if (b.intersect(micro_ray))
+      return false;
+    if (intersect_micro(micro_ray, i, node))
+      return true;
+  }
+  return false;
 }
 
 bool BVHAccel::intersect_micro(const Ray& ray, Intersection* i, BVHNode *node) const {
@@ -120,9 +130,9 @@ bool BVHAccel::intersect_micro(const Ray& ray, Intersection* i, BVHNode *node) c
       }
     }
   } else {
-    if (intersect(ray, i, node->l))
+    if (intersect_micro(ray, i, node->l))
       hit = true;
-    if (intersect(ray, i, node->r))
+    if (intersect_micro(ray, i, node->r))
       hit = true;
   }
   return hit;

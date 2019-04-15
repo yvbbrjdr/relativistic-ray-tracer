@@ -30,7 +30,7 @@ bool Sphere::intersect(const Ray& r, Intersection *i) const {
     if (r.min_t <= t1 && t1 <= r.max_t) {
       r.max_t = t1;
       if (i) {
-        i->t = t1;
+        i->hit_p = r.o + r.d * t1;
         i->n = normal(r.o + r.d * t1);
         i->primitive = this;
         i->bsdf = get_bsdf();
@@ -38,7 +38,7 @@ bool Sphere::intersect(const Ray& r, Intersection *i) const {
     } else if (r.min_t <= t2 && t2 <= r.max_t) {
       r.max_t = t2;
       if (i) {
-        i->t = t2;
+        i->hit_p = r.o + r.d * t2;
         i->n = normal(r.o + r.d * t2);
         i->primitive = this;
         i->bsdf = get_bsdf();

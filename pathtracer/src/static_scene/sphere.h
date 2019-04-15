@@ -82,7 +82,7 @@ class Sphere : public Primitive {
   */
   void drawOutline(const Color& c, float alpha) const;
 
- private:
+ protected:
 
   /**
    * Tests for ray-sphere intersection, returning true if there are

@@ -16,7 +16,7 @@ namespace CGL {
     Matrix3x3 o2w;
     make_coord_space(o2w, isect.n);
     Matrix3x3 w2o = o2w.T();
-    const Vector3D& hit_p = r.o + r.d * isect.t;
+    const Vector3D& hit_p = isect.hit_p;
     const Vector3D& w_out = w2o * (-r.d);
     int num_samples = scene->lights.size() * ns_area_light;
     Spectrum L_out;
@@ -34,7 +34,7 @@ namespace CGL {
     Matrix3x3 o2w;
     make_coord_space(o2w, isect.n);
     Matrix3x3 w2o = o2w.T();
-    const Vector3D& hit_p = r.o + r.d * isect.t;
+    const Vector3D& hit_p = isect.hit_p;
     const Vector3D& w_out = w2o * (-r.d);
     Spectrum L_out;
     int total_num_samples = 0;
@@ -70,7 +70,7 @@ namespace CGL {
     Matrix3x3 o2w;
     make_coord_space(o2w, isect.n);
     Matrix3x3 w2o = o2w.T();
-    Vector3D hit_p = r.o + r.d * isect.t;
+    Vector3D hit_p = isect.hit_p;
     Vector3D w_out = w2o * (-r.d);
     Spectrum L_out;
     if (!isect.bsdf->is_delta())
