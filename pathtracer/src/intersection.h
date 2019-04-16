@@ -23,6 +23,8 @@ struct Intersection {
 
   Vector3D hit_p;
 
+  Vector3D w_out;
+
   const Primitive* primitive;  ///< the primitive intersected
 
   Vector3D n;  ///< normal at point of intersection

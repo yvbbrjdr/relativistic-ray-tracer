@@ -45,6 +45,7 @@ bool Triangle::intersect(const Ray& r, Intersection *isect) const {
     r.max_t = t;
     if (isect) {
       isect->hit_p = r.o + r.d * t;
+      isect->w_out = -r.d;
       isect->n = b0 * n0 + b1 * n1 + b2 * n2;
       isect->primitive = this;
       isect->bsdf = get_bsdf();
