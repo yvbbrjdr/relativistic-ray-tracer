@@ -8,6 +8,10 @@ BSDF* BlackHole::get_bsdf() const {
   return nullptr;
 }
 
+double BlackHole::f(double u) {
+  return -u + 3.0 * r * u * u / 2.0;
+}
+
 Ray BlackHole::next_micro_ray(const Ray &ray) {
   Ray ret(ray.o + ray.d * ray.max_t, Vector3D(), 0.0);
   Vector3D x_axis = ret.o - o;
@@ -19,9 +23,11 @@ Ray BlackHole::next_micro_ray(const Ray &ray) {
   double dy = y_axis.norm();
   y_axis.normalize();
   double up = -u * dx / dy;
-  double upp = 3 * r * u * u / 2 - u;
-  up += upp * delta_theta;
-  u += up * delta_theta;
+  double f1 = f(u);
+  double f2 = f(u + up * delta_theta / 2.0);
+  double f3 = f(u + up * delta_theta / 2.0 + f1 * delta_theta * delta_theta / 4.0);
+  double f4 = f(u + up * delta_theta + f2 * delta_theta / 2.0);
+  u += up * delta_theta + (f1 + f2 + f3) * delta_theta * delta_theta / 6.0;
   d = 1 / u;
   double next_x = d * cos(delta_theta);
   double next_y = d * sin(delta_theta);

@@ -101,7 +101,7 @@ bool BVHAccel::intersect(const Ray& ray, BVHNode *node) const {
 }
 
 bool BVHAccel::intersect(const Ray& ray, Intersection* i, BVHNode *node) const {
-  BlackHole b(nullptr, Vector3D(0, 0, 0), 0.4, 0.01);
+  BlackHole b(nullptr, Vector3D(0, 1, 0), 0.1, 0.1);
   Ray micro_ray(ray.o, ray.d, 0.0);
   for (int j = 0; j * b.delta_theta < 2 * M_PI; ++j) {
     micro_ray = b.next_micro_ray(micro_ray);

@@ -10,6 +10,7 @@ class BlackHole : public Sphere {
   double delta_theta;
   BlackHole(const SphereObject* object, const Vector3D& o, double r, double delta_theta);
   BSDF* get_bsdf() const;
+  double f(double u);
   Ray next_micro_ray(const Ray &ray);
 };
 
