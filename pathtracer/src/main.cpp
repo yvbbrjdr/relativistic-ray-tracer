@@ -40,9 +40,9 @@ void usage(const char* binaryName) {
 }
 
 HDRImageBuffer* load_exr(const char* file_path) {
-  
+
   const char* err;
-  
+
   EXRImage exr;
   InitEXRImage(&exr);
 
@@ -70,8 +70,8 @@ HDRImageBuffer* load_exr(const char* file_path) {
   float* channel_g = (float*) exr.images[1];
   float* channel_b = (float*) exr.images[0];
   for (size_t i = 0; i < exr.width * exr.height; i++) {
-    envmap->data[i] = Spectrum(channel_r[i], 
-                               channel_g[i], 
+    envmap->data[i] = Spectrum(channel_r[i],
+                               channel_g[i],
                                channel_b[i]);
   }
 
@@ -139,6 +139,7 @@ int main( int argc, char** argv ) {
       case 'B':
           CGL::StaticScene::global_black_hole.o = Vector3D(atof(argv[optind - 1]), atof(argv[optind]), atof(argv[optind + 1]));
           CGL::StaticScene::global_black_hole.r = atof(argv[optind + 2]);
+          CGL::StaticScene::global_black_hole.r2 = CGL::StaticScene::global_black_hole.r * CGL::StaticScene::global_black_hole.r;
           CGL::StaticScene::global_black_hole.delta_theta = atof(argv[optind + 3]);
           optind += 4;
           break;
@@ -178,7 +179,7 @@ int main( int argc, char** argv ) {
 
     if (w && h)
       app->resize(w, h);
-    
+
     if (cam_settings != "")
       app->load_camera(cam_settings);
 
@@ -195,7 +196,7 @@ int main( int argc, char** argv ) {
   // init viewer
   viewer.init();
 
-  // load scene 
+  // load scene
   app->load(sceneInfo);
 
   delete sceneInfo;
