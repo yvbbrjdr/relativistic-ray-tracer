@@ -14,6 +14,8 @@ class BlackHole : public Sphere {
   Ray next_micro_ray(const Ray &ray);
 };
 
+extern BlackHole global_black_hole;
+
 } // namespace StaticScene
 } // namespace CGL
 
