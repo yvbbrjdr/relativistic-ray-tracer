@@ -102,8 +102,19 @@ bool BVHAccel::intersect(const Ray& ray, BVHNode *node) const {
 
 bool BVHAccel::intersect(const Ray& ray, Intersection* i, BVHNode *node) const {
   Ray micro_ray(ray.o, ray.d, 0.0);
+  //begin precalcs, use phi = 0 initial convention
+  Vector3D r_vec = ray.o - o;
+  double theta = acos(dot(r_vec.unit(), spin_axis));
+  Vector3D x_hat = (r_vec - r_vec.norm() * spin_axis * cos(theta)).unit();
+  Vector3D y_hat = cross(spin_axis, x_axis);
+  Vector3D theta_hat = y_hat;
+  Vector3D phi_hat = x_hat * cos(theta) - spin_axis * sin(theta);
+  ray.b = dot(phi_hat, ray.d); //ptheta;
+  ray.q = pow(dot(theta_hat, ray.d), 2.0) + 
+  pow(cos(theta), 2.0) * (pow(ray.b / sin(delta_theta), 2.0) - a * a);
+  //end precalcs
   for (int j = 0; j * global_black_hole.delta_theta < 2 * M_PI; ++j) {
-    micro_ray = global_black_hole.next_micro_ray(micro_ray);
+    micro_ray = global_black_hole.next_micro_ray(micro_ray, ray);
     if (global_black_hole.intersect(micro_ray))
       return false;
     if (intersect_micro(micro_ray, i, node))

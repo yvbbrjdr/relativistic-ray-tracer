@@ -7,11 +7,14 @@ namespace CGL { namespace StaticScene {
 
 class BlackHole : public Sphere {
  public:
-  double delta_theta;
-  BlackHole(const SphereObject* object, const Vector3D& o, double r, double delta_theta);
+  double delta;
+  Vector3D spin_axis;
+  double a;
+  double m;
+  BlackHole(const SphereObject* object, const Vector3D& o, double m, double delta, Vector3D spin_axis, double a);
   BSDF* get_bsdf() const;
   double f(double u);
-  Ray next_micro_ray(const Ray &ray);
+  Ray next_micro_ray(const Ray &ray, const Ray &original);
 };
 
 extern BlackHole global_black_hole;

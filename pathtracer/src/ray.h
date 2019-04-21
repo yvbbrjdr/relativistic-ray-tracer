@@ -25,6 +25,10 @@ struct Ray {
   mutable double min_t; ///< treat the ray as a segment (ray "begin" at min_t)
   mutable double max_t; ///< treat the ray as a segment (ray "ends" at max_t)
 
+  //precalcs
+  double b; // axial angular momentum
+  double q; // carter constant
+
   Vector3D inv_d;  ///< component wise inverse
   int sign[3];     ///< fast ray-bbox intersection
 
