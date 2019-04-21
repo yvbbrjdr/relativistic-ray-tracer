@@ -1,14 +1,14 @@
 #include "blackhole.h"
 
-#define H 0.000001
+#define H 0.001
 
 namespace CGL { namespace StaticScene {
 
 BlackHole global_black_hole(nullptr, Vector3D(0, 1, 0), 0.1, 0.1, Vector3D(0, 0, 1).unit(), 1);
 
-BlackHole::BlackHole(const SphereObject* object, const Vector3D& o, double m, double delta, 
-  Vector3D spin_axis, double a) : 
-Sphere(object, o, (1.0 + sqrt(1.0 - a * a)) * m), delta_theta(delta_theta), spin_axis(spin_axis), angular_momentum(a) {}
+BlackHole::BlackHole(const SphereObject* object, const Vector3D& o, double m, double delta,
+  Vector3D spin_axis, double a) :
+Sphere(object, o, (1.0 + sqrt(1.0 - a * a)) * m), delta(delta), spin_axis(spin_axis), a(a) {}
 
 BSDF* BlackHole::get_bsdf() const {
   return nullptr;
@@ -32,6 +32,32 @@ double BlackHole::dphi(double r_mag, double theta, double b, double q) {
      - 8 * RDT(r_mag, theta, b - H, q) + RDT(r_mag, theta, b - 2 * H, q)) / (12 * H);
 }
 
+double BlackHole::predpr(double r_mag, double theta, double pr,
+                          double ptheta, double b, double q) {
+  double denom = 2 * pow(rho(r_mag, theta), 2.0)
+  return -del(r_mag) * pr * pr / denom
+    - ptheta * ptheta / denom
+    + RDT(r_mag, theta, b, q);
+}
+
+double BlackHole::dptheta(double r_mag, double theta, double pr,
+                          double ptheta, double b, double q) {
+  (-predpr(r_mag, theta + 2 * H, pr, ptheta, b, q)
+   + 8 * predpr(r_mag, theta + H, pr, ptheta, b , q)
+   -8 * predpr(r_mag, theta - H, pr, ptheta, b, q)
+   + predpr(r_mag, theta - 2 * H, pr, ptheta, b, q))
+   / (12 * H);
+}
+
+double BlackHole::dpr(double r_mag, double theta, double pr
+                      double ptheta, double b, double q) {
+  return (-predpr(r_mag + 2 * H, theta, pr, ptheta, b, q)
+          +8 * predpr(r_mag + H, theta, pr, ptheta, b, q)
+          -8 * predpr(r_mag - H, theta, pr, ptheta, b, q)
+           + predpr(r_mag - 2 * H, theta, pr, ptheta, b, q))
+           / (12 * H);
+}
+
 double BlackHole::RDT(double r_mag, double theta, double b, double q) {
   return (R(r_mag, b, q) + del(r_mag) * big_Theta(theta, b, q)) /
     (2 * del(r_mag) * pow(rho(r_mag, theta), 2.0));
@@ -45,14 +71,13 @@ double BlackHole::del(double r_mag) {
   return r_mag * r_mag - 2.0 * r + a * a;
 }
 
-double BlackHole::sigma(double r_mag, theta) {
-  return sqrt(pow(r_mag * r_mag + a * a), 2.0)
-   - pow(a * sin(theta)) * del(r_mag);
+double BlackHole::sigma(double r_mag, double theta) {
+  return sqrt(pow(r_mag * r_mag + a * a, 2.0)
+   - pow(a * sin(theta), 2.0) * del(r_mag));
 }
 
 double BlackHole::P(double r_mag, double b) {
-  return r_mag * r_mag + a * a
-    a * b;
+  return r_mag * r_mag + a * a - a * b;
 }
 
 double BlackHole::R(double r_mag, double b, double q) {
@@ -61,7 +86,7 @@ double BlackHole::R(double r_mag, double b, double q) {
 }
 
 double BlackHole::big_Theta(double theta, double b, double q) {
-  return q - pow(cos(theta), 2.0) * 
+  return q - pow(cos(theta), 2.0) *
     (b * b / pow(cos(theta), 2.0) - a * a);
 }
 
@@ -76,8 +101,8 @@ Ray BlackHole::next_micro_ray(const Ray &ray, const Ray &original) {
   */
   Vector3D r_vec = ret.o - o;
   double theta = acos(dot(r_vec.unit(), spin_axis));
-  Vector3D x_axis = (r_vec - r_vec.norm() * spin_axis * cos(theta)).unit();
-  Vector3D y_axis = cross(spin_axis, x_axis);
+  Vector3D x_hat = (r_vec - r_vec.norm() * spin_axis * cos(theta)).unit();
+  Vector3D y_hat = cross(spin_axis, x_hat);
   Vector3D theta_hat = y_hat;
   Vector3D phi_hat = x_hat * cos(theta) - spin_axis * sin(theta);
   Vector3D r_hat = x_hat * sin(theta) + spin_axis * cos(theta);
@@ -85,11 +110,13 @@ Ray BlackHole::next_micro_ray(const Ray &ray, const Ray &original) {
   distances for the calculations assume unit mass
   scale back lengths after finishing calculation
   */
-  double r_mag = r_vec.norm() / m; //in units of black hole mass
+  //Initial conditions
+  double r_mag = r_vec.norm() / m; //distance in terms of unit mass
   double pr = dot(ray.d, r_hat);
   double ptheta = dot(ray.d, theta_hat);
+  Vector4D yi =
   //Runge Kutta numerically integrate
-  
+
   //return back to normal Vector3D
   ret.d = o + next_x * x_axis + next_y * y_axis - ret.o;
   ret.max_t = ret.d.norm();

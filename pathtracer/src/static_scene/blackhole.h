@@ -15,6 +15,17 @@ class BlackHole : public Sphere {
   BSDF* get_bsdf() const;
   double f(double u);
   Ray next_micro_ray(const Ray &ray, const Ray &original);
+  double dr(double r_mag, double theta, double pr);
+  double dtheta(double r_mag, double theta, double ptheta);
+  double dphi(double r_mag, double theta, double b, double q);
+  double RDT(double r_mag, double theta, double b, double q);
+  double rho(double r_mag, double theta);
+  double del(double r_mag);
+  double sigma(double r_mag, double theta);
+  double P(double r_mag, double b);
+  double R(double r_mag, double b, double q);
+  double big_Theta(double theta, double b, double q);
+
 };
 
 extern BlackHole global_black_hole;
