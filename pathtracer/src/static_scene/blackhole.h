@@ -11,7 +11,7 @@ class BlackHole : public Sphere {
   Vector3D spin_axis;
   double a;
   double m;
-  BlackHole(const SphereObject* object, const Vector3D& o, double m, double delta, Vector3D spin_axis, double a);
+  BlackHole(const SphereObject* object, const Vector3D& o, double m, double delta, const Vector3D spin_axis, double a);
   BSDF* get_bsdf() const;
   Ray next_micro_ray(const Ray &ray, const Ray &original);
   double dr(double r_mag, double theta, double pr);
