@@ -1,95 +1,132 @@
 #include "blackhole.h"
 
-#define H 0.001
+#define H 0.01
+const bool DEB = true;
 
 namespace CGL { namespace StaticScene {
 
-BlackHole global_black_hole(nullptr, Vector3D(0, 1, 0), 0.1, 0.1, Vector3D(0, 0, 1).unit(), 1);
+BlackHole global_black_hole(nullptr, Vector3D(0, 1, 0), 0.01, pow(10, -1), Vector3D(0, 0, 1).unit(), 0.25);
 
 BlackHole::BlackHole(const SphereObject* object, const Vector3D& o, double m, double delta,
   Vector3D spin_axis, double a) :
-Sphere(object, o, (1.0 + sqrt(1.0 - a * a)) * m), delta(delta), spin_axis(spin_axis), a(a) {}
+Sphere(object, o, (1.0 + sqrt(1.0 - a * a)) * m), delta(delta), spin_axis(spin_axis),
+a(a), m(m) {}
 
 BSDF* BlackHole::get_bsdf() const {
   return nullptr;
 }
 
-double BlackHole::f(double u) {
-  return -u + 3.0 * r * u * u / 2.0;
-}
-
 double BlackHole::dr(double r_mag, double theta, double pr) {
-  return del(r_mag) * pr / pow(rho(r_mag, theta), 2.0);
+  double ret = del(r_mag) * pr / pow(rho(r_mag, theta), 2.0);
+  if (isnan(ret))
+    throw "isnan in dr";
+  return ret;
 }
 
 double BlackHole::dtheta(double r_mag, double theta, double ptheta) {
-  return ptheta / pow(rho(r_mag, theta), 2.0);
+  double ret = ptheta / pow(rho(r_mag, theta), 2.0);
+  if (isnan(ret))
+    throw "isnan in dtheta";
+  return ret;
 }
 
 double BlackHole::dphi(double r_mag, double theta, double b, double q) {
   //4th order finite difference approx of first derivative
-  return (-RDT(r_mag, theta, b + 2 * H, q) + 8 * RDT(r_mag, theta, b + H, q)
+  double ret = (-RDT(r_mag, theta, b + 2 * H, q) + 8 * RDT(r_mag, theta, b + H, q)
      - 8 * RDT(r_mag, theta, b - H, q) + RDT(r_mag, theta, b - 2 * H, q)) / (12 * H);
+  if (isnan(ret))
+    throw "isnan in dphi";
+  return ret;
 }
 
 double BlackHole::predpr(double r_mag, double theta, double pr,
                           double ptheta, double b, double q) {
   double denom = 2 * pow(rho(r_mag, theta), 2.0);
-  return -del(r_mag) * pr * pr / denom
+  double ret = -del(r_mag) * pr * pr / denom
     - ptheta * ptheta / denom
     + RDT(r_mag, theta, b, q);
+  if (isnan(ret))
+   throw "isnan in predpr";
+  return ret;
 }
 
 double BlackHole::dptheta(double r_mag, double theta, double pr,
                           double ptheta, double b, double q) {
-  return (-predpr(r_mag, theta + 2 * H, pr, ptheta, b, q)
+  double ret = (-predpr(r_mag, theta + 2 * H, pr, ptheta, b, q)
    + 8 * predpr(r_mag, theta + H, pr, ptheta, b , q)
    -8 * predpr(r_mag, theta - H, pr, ptheta, b, q)
    + predpr(r_mag, theta - 2 * H, pr, ptheta, b, q))
    / (12 * H);
+  if (isnan(ret))
+    throw "isnan in dptheta";
+  return ret;
 }
 
 double BlackHole::dpr(double r_mag, double theta, double pr,
                       double ptheta, double b, double q) {
-  return (-predpr(r_mag + 2 * H, theta, pr, ptheta, b, q)
+  double ret = (-predpr(r_mag + 2 * H, theta, pr, ptheta, b, q)
           +8 * predpr(r_mag + H, theta, pr, ptheta, b, q)
           -8 * predpr(r_mag - H, theta, pr, ptheta, b, q)
            + predpr(r_mag - 2 * H, theta, pr, ptheta, b, q))
            / (12 * H);
+  if (isnan(ret))
+    throw "isnan in dpr";
+  return ret;
 }
 
 double BlackHole::RDT(double r_mag, double theta, double b, double q) {
-  return (R(r_mag, b, q) + del(r_mag) * big_Theta(theta, b, q)) /
+  double ret = (R(r_mag, b, q) + del(r_mag) * big_Theta(theta, b, q)) /
     (2 * del(r_mag) * pow(rho(r_mag, theta), 2.0));
+  if (isnan(ret))
+    throw "isnan in RDT";
+  return ret;
 }
 
 double BlackHole::rho(double r_mag, double theta) {
-  return sqrt(r_mag * r_mag + pow(a * cos(theta), 2.0));
+  double ret = sqrt(r_mag * r_mag + pow(a * cos(theta), 2.0));
+  if (isnan(ret))
+    throw "isnan in rho";
+  return ret;
 }
 
 double BlackHole::del(double r_mag) {
-  return r_mag * r_mag - 2.0 * r + a * a;
+  double ret = r_mag * r_mag - 2.0 * r + a * a;
+  if (isnan(ret))
+    throw "isnan in del";
+  return ret;
 }
 
 double BlackHole::sigma(double r_mag, double theta) {
-  return sqrt(pow(r_mag * r_mag + a * a, 2.0)
+  double ret = sqrt(pow(r_mag * r_mag + a * a, 2.0)
    - pow(a * sin(theta), 2.0) * del(r_mag));
+  if (isnan(ret))
+    throw "isnan in sigma";
+  return ret;
 }
 
 double BlackHole::P(double r_mag, double b) {
-  return r_mag * r_mag + a * a - a * b;
+  double ret = r_mag * r_mag + a * a - a * b;
+  if (isnan(ret))
+    throw "isnan in P";
+  return ret;
 }
 
 double BlackHole::R(double r_mag, double b, double q) {
-  return pow(P(r_mag, b), 2.0) - del(r_mag)
+  double ret = pow(P(r_mag, b), 2.0) - del(r_mag)
     * (pow((b - a), 2.0) + q);
+  if (isnan(ret))
+    throw "isnan in R";
+  return ret;
 }
 
 double BlackHole::big_Theta(double theta, double b, double q) {
-  return q - pow(cos(theta), 2.0) *
+  double ret = q - pow(cos(theta), 2.0) *
     (b * b / pow(cos(theta), 2.0) - a * a);
+  if (isnan(ret))
+    throw "isnan in big_Theta";
+  return ret;
 }
-  
+
 Vector4D BlackHole::evaluate(const Vector4D y, const Ray& original) {
   Vector4D k = Vector4D();
   k[0] = dr(y[0], y[1], y[2]);
@@ -125,8 +162,8 @@ Ray BlackHole::next_micro_ray(const Ray &ray, const Ray &original) {
   */
   //Initial conditions
   double r_mag = r_vec.norm() / m; //distance in terms of unit mass
-  double pr = dot(ray.d, r_hat);
-  double ptheta = dot(ray.d, theta_hat);
+  double pr = dot(ray.d, r_hat) / m;
+  double ptheta = dot(ray.d, theta_hat) / m;
   Vector4D yi = Vector4D(r_mag, theta, pr, ptheta);
   //Runge Kutta numerically integrate
   Vector4D k1 = Vector4D();
@@ -137,6 +174,10 @@ Ray BlackHole::next_micro_ray(const Ray &ray, const Ray &original) {
   k2 = delta * evaluate(yi + k1 / 2.0, original);
   k3 = delta * evaluate(yi + k2 / 2.0, original);
   k4 = delta * evaluate(yi + k3, original);
+  // if (DEB) {
+  //   cout << k4 << endl;
+  //   exit(0);
+  // }
   yi += k1 / 6.0 + k2 / 3.0 + k3 / 3.0 + k4 / 6.0;
   double delta_phi;
   double phik1 = delta * evalPhi(yi, original);
@@ -153,6 +194,9 @@ Ray BlackHole::next_micro_ray(const Ray &ray, const Ray &original) {
                       cos(theta)
                       );
   ret.d = o + next.x * x_hat + next.y * y_hat + next.z * spin_axis - ret.o;
+  if (DEB) {
+    cout << r_mag << endl;
+  }
   ret.max_t = ret.d.norm();
   ret.d.normalize();
   return ret;

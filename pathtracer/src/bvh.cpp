@@ -9,6 +9,8 @@
 
 using namespace std;
 
+const bool DEB = true;
+
 namespace CGL { namespace StaticScene {
 
 BVHAccel::BVHAccel(const std::vector<Primitive *> &_primitives,
@@ -102,12 +104,30 @@ bool BVHAccel::intersect(const Ray& ray, BVHNode *node) const {
 
 bool BVHAccel::intersect(const Ray& ray, Intersection* i, BVHNode *node) const {
   Ray micro_ray(ray.o, ray.d, 0.0);
-  for (int j = 0; j * global_black_hole.delta < 10; ++j) {
-  micro_ray = global_black_hole.next_micro_ray(micro_ray, ray);
-  if (global_black_hole.intersect(micro_ray))
-    return false;
-  if (intersect_micro(micro_ray, i, node))
-    return true;
+  for (int j = 0; j < 100; ++j) {
+    micro_ray = global_black_hole.next_micro_ray(micro_ray, ray);
+    if (global_black_hole.intersect(micro_ray))
+    {
+      if (DEB)
+      {
+        cout << "black hole intersect" << endl;
+        cout << j << endl;
+        cout << (micro_ray.o - ray.o).norm() << endl;
+      }
+      return false;
+    }
+    if (intersect_micro(micro_ray, i, node))
+    {
+      if (DEB) {
+        cout << "hit object" << endl;
+        cout << (micro_ray.o - ray.o).norm() << endl;
+      }
+      return true;
+    }
+  }
+  if (DEB) {
+    cout << "didn't reach" << endl;
+    cout << (micro_ray.o - ray.o).norm() << endl;
   }
   return false;
 }
