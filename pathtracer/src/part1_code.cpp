@@ -4,6 +4,7 @@
 
 #include "part1_code.h"
 #include <time.h>
+#include "static_scene/blackhole.h"
 
 using namespace CGL::StaticScene;
 
@@ -183,6 +184,18 @@ namespace CGL {
     Vector2D bl(-tan(radians(hFov) / 2), -tan(radians(vFov) / 2));
     Ray ret(pos, (c2w * Vector3D(lerp(bl.x, -bl.x, x), lerp(bl.y, -bl.y, y), -1)).unit(), fClip);
     ret.min_t = nClip;
+    //use phi = 0 initial convention
+    Vector3D r_vec = ret.o - global_black_hole.o;
+    double theta = acos(dot(r_vec.unit(), global_black_hole.spin_axis));
+    Vector3D x_hat = (r_vec - r_vec.norm() * global_black_hole.spin_axis * cos(theta)).unit();
+    Vector3D y_hat = cross(global_black_hole.spin_axis, x_hat);
+    Vector3D theta_hat = y_hat;
+    Vector3D phi_hat = x_hat * cos(theta) - global_black_hole.spin_axis * sin(theta);
+    //begin precalcs, remember unit mass assumption
+    ret.b = dot(phi_hat, ret.d);
+    ret.q = pow(dot(theta_hat, ret.d), 2.0) +
+    pow(cos(theta), 2.0) * (pow(ret.b / sin(theta), 2.0) - global_black_hole.a * global_black_hole.a);
+    //end precalcs
     return ret;
   }
 }

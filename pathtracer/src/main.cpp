@@ -140,7 +140,7 @@ int main( int argc, char** argv ) {
           CGL::StaticScene::global_black_hole.o = Vector3D(atof(argv[optind - 1]), atof(argv[optind]), atof(argv[optind + 1]));
           CGL::StaticScene::global_black_hole.r = atof(argv[optind + 2]);
           CGL::StaticScene::global_black_hole.r2 = CGL::StaticScene::global_black_hole.r * CGL::StaticScene::global_black_hole.r;
-          CGL::StaticScene::global_black_hole.delta_theta = atof(argv[optind + 3]);
+          CGL::StaticScene::global_black_hole.delta = atof(argv[optind + 3]);
           optind += 4;
           break;
       default:
