@@ -105,6 +105,7 @@ bool BVHAccel::intersect(const Ray& ray, BVHNode *node) const {
 bool BVHAccel::intersect(const Ray& ray, Intersection* i, BVHNode *node) const {
   Ray micro_ray(ray.o, ray.d, 0.0);
   for (int j = 0; j < 100; ++j) {
+    cout << micro_ray.o << endl;
     micro_ray = global_black_hole.next_micro_ray(micro_ray, ray);
     if (global_black_hole.intersect(micro_ray))
     {

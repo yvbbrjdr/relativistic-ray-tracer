@@ -1,11 +1,11 @@
 #include "blackhole.h"
 
 #define H 0.01
-const bool DEB = true;
+const bool DEB = false;
 
 namespace CGL { namespace StaticScene {
 
-BlackHole global_black_hole(nullptr, Vector3D(0, 1, 0), 0.01, pow(10, -1), Vector3D(0, 0, 1).unit(), 0.25);
+BlackHole global_black_hole(nullptr, Vector3D(0, 100, 0), 1, pow(10, -1), Vector3D(0, 0, 1).unit(), 0.25);
 
 BlackHole::BlackHole(const SphereObject* object, const Vector3D& o, double m, double delta,
   Vector3D spin_axis, double a) :
@@ -90,7 +90,7 @@ double BlackHole::rho(double r_mag, double theta) {
 }
 
 double BlackHole::del(double r_mag) {
-  double ret = r_mag * r_mag - 2.0 * r + a * a;
+  double ret = r_mag * r_mag - 2.0 * r_mag + a * a;
   if (isnan(ret))
     throw "isnan in del";
   return ret;
@@ -153,8 +153,8 @@ Ray BlackHole::next_micro_ray(const Ray &ray, const Ray &original) {
   double theta = acos(dot(r_vec.unit(), spin_axis));
   Vector3D x_hat = (r_vec - r_vec.norm() * spin_axis * cos(theta)).unit();
   Vector3D y_hat = cross(spin_axis, x_hat);
-  Vector3D theta_hat = y_hat;
-  Vector3D phi_hat = x_hat * cos(theta) - spin_axis * sin(theta);
+  Vector3D theta_hat = x_hat * cos(theta) - spin_axis * sin(theta);
+  Vector3D phi_hat = y_hat;
   Vector3D r_hat = x_hat * sin(theta) + spin_axis * cos(theta);
   /*
   distances for the calculations assume unit mass
@@ -178,7 +178,9 @@ Ray BlackHole::next_micro_ray(const Ray &ray, const Ray &original) {
   //   cout << k4 << endl;
   //   exit(0);
   // }
-  yi += k1 / 6.0 + k2 / 3.0 + k3 / 3.0 + k4 / 6.0;
+  Vector4D diff = k1 / 6.0 + k2 / 3.0 + k3 / 3.0 + k4 / 6.0;
+  // cout << diff << endl;
+  yi += diff;
   double delta_phi;
   double phik1 = delta * evalPhi(yi, original);
   double phik2 = delta * evalPhi(yi + k1 / 2.0, original);

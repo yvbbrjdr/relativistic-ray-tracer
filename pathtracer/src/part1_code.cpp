@@ -189,8 +189,8 @@ namespace CGL {
     double theta = acos(dot(r_vec.unit(), global_black_hole.spin_axis));
     Vector3D x_hat = (r_vec - r_vec.norm() * global_black_hole.spin_axis * cos(theta)).unit();
     Vector3D y_hat = cross(global_black_hole.spin_axis, x_hat);
-    Vector3D theta_hat = y_hat;
-    Vector3D phi_hat = x_hat * cos(theta) - global_black_hole.spin_axis * sin(theta);
+    Vector3D theta_hat = x_hat * cos(theta) - global_black_hole.spin_axis * sin(theta);
+    Vector3D phi_hat = y_hat;
     //begin precalcs, remember unit mass assumption
     ret.b = dot(phi_hat, ret.d);
     ret.q = pow(dot(theta_hat, ret.d), 2.0) +
