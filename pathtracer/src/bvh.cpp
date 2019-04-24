@@ -104,20 +104,15 @@ bool BVHAccel::intersect(const Ray& ray, BVHNode *node) const {
 
 bool BVHAccel::intersect(const Ray& ray, Intersection* i, BVHNode *node) const {
   Ray micro_ray(ray.o, ray.d, 0.0);
-  cout << "initial : " << ray.o << endl;
-  for (int j = 0; j < 1000; ++j) {
-    // cout << micro_ray.o << ","<< endl;
+  if (DEB)
+  {
+    cout << "initial ray.o: " << ray.o << endl;
+    cout << "initial ray.d: " << ray.d << endl;
+  }
+  for (int j = 0; j < 10000; ++j) {
+    if (DEB)
+      cout << micro_ray.o << ","<< endl;
     micro_ray = global_black_hole.next_micro_ray(micro_ray, ray);
-    if (global_black_hole.intersect(micro_ray))
-    {
-      if (DEB)
-      {
-        cout << "black hole intersect" << endl;
-        cout << j << endl;
-        cout << (micro_ray.o - ray.o).norm() << endl;
-      }
-      return false;
-    }
     if (intersect_micro(micro_ray, i, node))
     {
       if (DEB) {
@@ -126,11 +121,23 @@ bool BVHAccel::intersect(const Ray& ray, Intersection* i, BVHNode *node) const {
       }
       return true;
     }
+    if (global_black_hole.intersect(micro_ray))
+    {
+      if (DEB)
+      {
+        cout << "black hole intersect" << endl;
+        cout << j << endl;
+        cout << micro_ray.max_t << endl;
+        cout << (global_black_hole.o - micro_ray.o).norm() << endl;
+        cout << global_black_hole.r << endl;
+      }
+      return false;
+    }
   }
   if (DEB) {
     cout << "didn't reach" << endl;
-    cout << "final : " << micro_ray.o << endl;
-    cout << (micro_ray.o - ray.o).norm() << endl;
+    cout << "final d: " << (micro_ray.o - ray.o).z << endl;
+    // cout << (micro_ray.o - ray.o) << endl;
   }
   return false;
 }

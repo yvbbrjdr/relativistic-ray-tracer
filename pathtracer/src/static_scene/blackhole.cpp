@@ -2,10 +2,188 @@
 
 #define H 0.1
 const bool DEB = false;
+const double tol = 0.01;
+bool equals(double a, double b) {
+  return abs(a - b) <= tol * b;
+}
 
 namespace CGL { namespace StaticScene {
 
-BlackHole global_black_hole(nullptr, Vector3D(0, 100000, 0), 1.0, pow(10, 0), Vector3D(0, 0, 1).unit(), 0.25);
+BlackHole global_black_hole(nullptr, Vector3D(0, 5, 0), 1.0, 0.55, Vector3D(0, 0, 1).unit(), 0.25);
+
+
+
+void testRho (void) {
+  double r = 4.0;
+  double theta = M_PI / 4.0;
+  double ret = global_black_hole.rho(r, theta);
+  if (!equals(ret, 4.0039))
+  {
+    cout << "rho expected: 4.0039" << endl << "got: " << ret << endl;
+  }
+}
+
+void testdel (void) {
+  double r = 4.0;
+  double ret = global_black_hole.del(r);
+  if (!equals(ret, 8.0625))
+  {
+    cout << "del expected: 8.0625" << endl << "got: " << ret << endl;
+  }
+}
+
+void testsigma (void) {
+  double r = 4.0;
+  double theta = M_PI/4;
+  double ret = global_black_hole.sigma(r, theta);
+  if (!equals(ret, 16.0547))
+  {
+    cout << "sigma expected: 16.05465" << endl << "got: " << ret << endl;
+  }
+}
+
+void testdr (void) {
+  double r = 4.0;
+  double theta = M_PI / 4;
+  double pr = 0.4;
+  double ret = global_black_hole.dr(r, theta, pr);
+  if (!equals(ret, 0.20116959))
+  {
+    cout << "dr expected: 0.20116959" << endl << "got: " << ret << endl;
+  }
+}
+
+void testdtheta (void) {
+  double r = 4.0;
+  double theta = M_PI / 4;
+  double ptheta = 0.4;
+  double ret = global_black_hole.dtheta(r, theta, ptheta);
+  if (!equals(ret, 0.02495126))
+  {
+    cout << "dtheta expected: 0.02495126" << endl << "got: " << ret << endl;
+  }
+}
+
+void testP (void) {
+  double r = 4.0;
+  double b = 0.75;
+  double ret = global_black_hole.P(r, b);
+  if (!equals(ret, 15.875))
+  {
+    cout << "P expected: 15.875" << endl << "got: " << ret << endl;
+  }
+}
+
+void testR(void) {
+  double r = 4.0;
+  double b = 0.75;
+  double q = 1.0;
+  double ret = global_black_hole.R(r, b, q);
+  if (!equals(ret, 241.9375
+              ))
+  {
+    cout << "R expected: 241.9375" << endl << "got: " << ret << endl;
+  }
+}
+
+void testbig_Theta(void) {
+  double theta = M_PI / 4;
+  double b = 0.75;
+  double q = 1.0;
+  double ret = global_black_hole.big_Theta(theta, b, q);
+  if (!equals(ret, 0.46874999
+              ))
+  {
+    cout << "big_Theta expected: 0.46874999" << endl << "got: " << ret << endl;
+  }
+}
+
+void testRDT(void) {
+  double r = 4.0;
+  double theta = M_PI / 4;
+  double b = 0.75;
+  double q = 1.0;
+  double ret = global_black_hole.RDT(r, theta, b, q);
+  if (!equals(ret, 0.95053
+              ))
+  {
+    cout << "RDT expected: 0.95053" << endl << "got: " << ret << endl;
+  }
+}
+
+void testdphi(void) {
+  double r = 4.0;
+  double theta = M_PI / 4;
+  double b = 0.75;
+  double q = 1.0;
+  double ret = global_black_hole.dphi(r, theta, b, q);
+  if (!equals(ret, 0.108678
+              ))
+  {
+    cout << "dphi expected: 0.108678" << endl << "got: " << ret << endl;
+  }
+}
+
+void testpredpr(void) {
+  double r = 4.0;
+  double theta = M_PI / 4;
+  double pr = 0.66;
+  double ptheta = 0.66;
+  double b = 0.75;
+  double q = 1.0;
+  double ret = global_black_hole.predpr(r, theta, pr, ptheta, b, q);
+  if (!equals(ret, 0.8274113664868461
+              ))
+  {
+    cout << "predpr expected: 0.8274113664868461" << endl << "got: " << ret << endl;
+  }
+}
+
+void testdpr(void) {
+  double r = 4.0;
+  double theta = M_PI / 4;
+  double pr = 0.66;
+  double ptheta = 0.66;
+  double b = 0.75;
+  double q = 1.0;
+  double ret = global_black_hole.dpr(r, theta, pr, ptheta, b, q);
+  if (!equals(ret, -0.23734015072637352
+              ))
+  {
+    cout << "dpr expected: -0.23734015072637352" << endl << "got: " << ret << endl;
+  }
+}
+
+void testdptheta(void) {
+  double r = 4.0;
+  double theta = M_PI / 4;
+  double pr = 0.66;
+  double ptheta = 0.66;
+  double b = 0.75;
+  double q = 1.0;
+  double ret = global_black_hole.dptheta(r, theta, pr, ptheta, b, q);
+  if (!equals(ret, 1.850371707708594e-16
+              ))
+  {
+    cout << "dptheta expected: 1.850371707708594e-16" << endl << "got: " << ret << endl;
+  }
+}
+
+int testfuncts(void) {
+  testRho();
+  testdel();
+  testsigma();
+  testP();
+  testR();
+  testbig_Theta();
+  testdr();
+  testdtheta();
+  testRDT();
+  testpredpr();
+  testdpr();
+  testdptheta();
+  exit(0);
+}
 
 BlackHole::BlackHole(const SphereObject* object, const Vector3D& o, double m, double delta, const
   Vector3D spin_axis, double a) :
@@ -141,6 +319,8 @@ double BlackHole::evalPhi(const Vector4D y, const Ray& original) {
 }
 
 Ray BlackHole::next_micro_ray(const Ray &ray, const Ray &original) {
+  
+  testfuncts();
   //Get beginning ray position
   Ray ret(ray.o + ray.d * ray.max_t, Vector3D(), 0.0);
   /*
@@ -162,6 +342,8 @@ Ray BlackHole::next_micro_ray(const Ray &ray, const Ray &original) {
   */
   //Initial conditions
   double r_mag = r_vec.norm() / m; //distance in terms of unit mass
+  if (DEB)
+    cout << "r_mag = " << r_mag << endl;
   double pr = dot(ray.d, r_hat) / m;
   double ptheta = dot(ray.d, theta_hat) / m;
   Vector4D yi = Vector4D(r_mag, theta, pr, ptheta);
@@ -174,6 +356,14 @@ Ray BlackHole::next_micro_ray(const Ray &ray, const Ray &original) {
   k2 = -delta * evaluate(yi + k1 / 2.0, original);
   k3 = -delta * evaluate(yi + k2 / 2.0, original);
   k4 = -delta * evaluate(yi + k3, original);
+  // if (DEB) {
+  //   cout << "k1 :" << k1 << endl;
+  //   cout << "k2 :" << k2 << endl;
+  //   cout << "k3 :" << k3 << endl;
+  //   cout << "k4 :" << k4 << endl;
+  //   cout << "yi :" << yi << endl;
+  //   exit(0);
+  // }
   // if (DEB) {
   //   cout << k4 << endl;
   //   exit(0);
@@ -196,11 +386,15 @@ Ray BlackHole::next_micro_ray(const Ray &ray, const Ray &original) {
                       cos(theta)
                       );
   ret.d = o + next.x * x_hat + next.y * y_hat + next.z * spin_axis - ret.o;
-  if (DEB) {
-    cout << ret.d << endl;
-  }
   ret.max_t = ret.d.norm();
-  // ret.d.normalize();
+  if (DEB) {
+    cout << "ret.o :" << ret.o << endl;
+    cout << "ray.o :" << ray.o << endl;
+    cout << "ret.d :" << ret.d << endl;
+    cout << "ray.d :" << ray.d << endl;
+    exit(0);
+  }
+  ret.d.normalize();
   return ret;
 }
 
