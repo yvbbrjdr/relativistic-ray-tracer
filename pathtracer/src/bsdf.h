@@ -11,8 +11,12 @@
 #include "sampler.h"
 #include "image.h"
 #include "blackbodyspectrum.h"
+#include <iostream>
+#include <string>
 
 #include <algorithm>
+
+using namespace std;
 
 namespace CGL {
 
@@ -248,9 +252,11 @@ class EmissionBSDF : public BSDF {
 
   Spectrum f(const Vector3D& wo, const Vector3D& wi);
   Spectrum sample_f(const Vector3D& wo, Vector3D* wi, float* pdf);
-  Spectrum get_emission() const { 
+  Spectrum get_emission() const {
     BlackBodySpectrum b = BlackBodySpectrum();
-    return b.toRGB();
+    Spectrum s = b.toRGB();
+    // cout << s << endl;
+    return s;
   }
   bool is_delta() const { return false; }
 

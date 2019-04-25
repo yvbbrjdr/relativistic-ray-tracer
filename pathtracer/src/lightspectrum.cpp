@@ -3,8 +3,9 @@
 #include "CGL/vector3D.h"
 #include "CGL/matrix3x3.h"
 #include "CGL/spectrum.h"
+#include <iostream>
 
-using std::vector;
+using namespace std;
 
 namespace CGL {
 
@@ -61,12 +62,15 @@ namespace CGL {
 		Returns native CGL, RGB Spectrum
 		*/
 		Matrix3x3 M_inv = Matrix3x3(
-			2.0413690, -0.5649464, -0.3446944,
-			-0.9692660, 1.8760108, 0.0415560,
-			0.0134474, -0.1183897, 1.0154096
+			0.41847, -0.15866, -0.082835,
+			-0.091169, 0.25243, 0.015708,
+			0.00092090, -0.0025498, 0.17860
 														);
 		Vector3D RGB = M_inv * toCIE_XYZ();
-		return Spectrum(RGB[0], RGB[1], RGB[2]);
+		// cout << RGB << endl;
+		return Spectrum(min(10.0, max(0.0, RGB[0])),
+										min(10.0, max(0.0, RGB[1])),
+										min(10.0, max(0.0, RGB[2])));
 	}
 
 

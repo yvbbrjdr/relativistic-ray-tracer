@@ -19,7 +19,7 @@ namespace CGL {
 		double step_size = (max_wav - min_wav) / num_channels;
 		for (int i = 0; i < num_channels; i++) {
 				double lambda = min_wav + i * step_size;
-				b.intensities[i] = planck_distribution(lambda / s);
+				b.intensities[i] = planck_distribution(lambda / s) / max_intensity;
 			}
 		return b;
 	}
