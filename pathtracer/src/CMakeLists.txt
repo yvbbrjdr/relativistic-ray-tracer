@@ -16,7 +16,7 @@ if(BUILD_3-1)
         dynamic_scene/mesh.cpp
         dynamic_scene/scene.cpp
         dynamic_scene/sphere.cpp
-
+        
         # Static scene
         static_scene/blackhole.cpp
         static_scene/object.cpp
@@ -37,6 +37,8 @@ if(BUILD_3-1)
         bvh.cpp
         pathtracer.cpp
         part1_code.cpp
+        lightspectrum.cpp
+        blackbodyspectrum.cpp
 
         # misc
         misc/sphere_drawing.cpp

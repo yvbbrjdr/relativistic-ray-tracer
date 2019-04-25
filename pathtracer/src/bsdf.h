@@ -10,6 +10,7 @@
 
 #include "sampler.h"
 #include "image.h"
+#include "blackbodyspectrum.h"
 
 #include <algorithm>
 
@@ -247,7 +248,10 @@ class EmissionBSDF : public BSDF {
 
   Spectrum f(const Vector3D& wo, const Vector3D& wi);
   Spectrum sample_f(const Vector3D& wo, Vector3D* wi, float* pdf);
-  Spectrum get_emission() const { return radiance; }
+  Spectrum get_emission() const { 
+    BlackBodySpectrum b = BlackBodySpectrum();
+    return b.toRGB();
+  }
   bool is_delta() const { return false; }
 
  private:
