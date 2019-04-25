@@ -5,9 +5,9 @@
 #include "CGL/spectrum.h"
 using std::vector;
 
-#define DEFAULT_NUM 340
+#define DEFAULT_NUM 400
 #define DEFAULT_MIN 380.0
-#define DEFAULT_MAX 740.0
+#define DEFAULT_MAX 780.0
 
 namespace CGL {
 

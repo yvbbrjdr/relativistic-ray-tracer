@@ -32,17 +32,23 @@ namespace CGL {
 		return l;
 	}
 
-	double LightSpectrum::CIE_X(double lambda) {
-		return 1.065 * exp(-pow(((lambda - 595.8) / 33.33), 2.0) / 2.0)
-			+ 0.366 * exp(-pow(((lambda - 446.8) / 19.44), 2.0) / 2.0);
+	double LightSpectrum::CIE_X(double wavelen) {
+		double dParam1 = (wavelen-442.0)*((wavelen < 442.0)?0.0624:0.0374);
+		double dParam2 = (wavelen-599.8)*((wavelen < 599.8)?0.0264:0.0323);
+		double dParam3 = (wavelen-501.1)*((wavelen < 501.1)?0.0490:0.0382);
+		return 0.362*exp(-0.5*dParam1*dParam1) + 1.056*exp(-0.5*dParam2*dParam2);
 	}
 
-	double LightSpectrum::CIE_Y(double lambda) {
-		return 1.014 * exp(-pow(((log(lambda) - log(595.8)) / 0.075), 2.0) / 2.0);
+	double LightSpectrum::CIE_Y(double wavelen) {
+		double dParam1 = (wavelen-568.8)*((wavelen < 568.8)?0.0213:0.0247);
+		double dParam2 = (wavelen-530.9)*((wavelen < 530.9)?0.0613:0.0322);
+		return 0.821*exp(-0.5*dParam1*dParam1) + 0.286*expf(-0.5*dParam2*dParam2);
 	}
 
-	double LightSpectrum::CIE_Z(double lambda) {
-		return 1.839 * exp(-pow(((log(lambda) - log(449.8)) / 0.051), 2.0) / 2.0);
+	double LightSpectrum::CIE_Z(double wavelen) {
+		double dParam1 = (wavelen-437.0)*((wavelen < 437.0)?0.0845:0.0278);
+		double dParam2 = (wavelen-459.0)*((wavelen < 459.0)?0.0385:0.0725);
+		return 1.217*expf(-0.5*dParam1*dParam1) + 0.681*exp(-0.5*dParam2*dParam2);
 	}
 
 	Vector3D LightSpectrum::toCIE_XYZ(void) {
@@ -54,7 +60,11 @@ namespace CGL {
 			XYZ.y += step_size * CIE_Y(lambda) * intensities[i];
 			XYZ.z += step_size * CIE_Z(lambda) * intensities[i];
 		}
-		return XYZ;
+	 	Vector3D xyz = XYZ / (XYZ.x + XYZ.y + XYZ.z);
+		// XYZ.x = 10.0 / xyz.y * xyz.x;
+		// XYZ.y = 10.0 / xyz.y;
+		// XYZ.z = 10.0 / xyz.y * (1 - xyz.x - xyz.y);
+		return xyz * 10;
 	}
 
 	Spectrum LightSpectrum::toRGB(void) {
@@ -67,7 +77,7 @@ namespace CGL {
 			0.00092090, -0.0025498, 0.17860
 														);
 		Vector3D RGB = M_inv * toCIE_XYZ();
-		// cout << RGB << endl;
+		cout << RGB << endl;
 		return Spectrum(min(10.0, max(0.0, RGB[0])),
 										min(10.0, max(0.0, RGB[1])),
 										min(10.0, max(0.0, RGB[2])));
