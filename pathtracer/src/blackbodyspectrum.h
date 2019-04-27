@@ -1,7 +1,7 @@
 #ifndef CGL_BLACKBODY_H
 #define CGL_BLACKBODY_H
 
-#define DEFAULT_T 500.0
+#define DEFAULT_T 3000.0
 #include "lightspectrum.h"
 #define WEIN 2.8977729e6
 #include <iostream>

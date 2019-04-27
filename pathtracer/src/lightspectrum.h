@@ -1,13 +1,13 @@
 #ifndef CGL_LIGHTSPECTRUM_H
 #define CGL_LIGHTSPECTRUM_H
-#include <vector>
 #include "CGL/vector3D.h"
 #include "CGL/spectrum.h"
-using std::vector;
-
+#include <valarray>
 #define DEFAULT_NUM 400
 #define DEFAULT_MIN 380.0
 #define DEFAULT_MAX 780.0
+
+using std::valarray;
 
 namespace CGL {
 
@@ -16,91 +16,78 @@ class LightSpectrum {
   const int num_channels; //number of wavelength channels
   const double min_wav; //min wavelength channel
   const double max_wav; //max wavelength channel
-  vector<double> intensities; //color channels
+  valarray<double> intensities; //color channels
 
   /*
   Currently only supports arithmetic on same size color channels.
   Default range is 380nm to 740nm with step size 1nm
   */
 
-  LightSpectrum(int num_channels = DEFAULT_NUM, double min_wav = DEFAULT_MIN, double max_wav = DEFAULT_MAX, vector<double> intensities = vector<double>(DEFAULT_NUM))
+  LightSpectrum(int num_channels = DEFAULT_NUM, double min_wav = DEFAULT_MIN, double max_wav = DEFAULT_MAX, valarray<double> intensities = valarray<double>(DEFAULT_NUM))
   : num_channels(num_channels), min_wav(min_wav), max_wav(max_wav), intensities(intensities) {}
 
   inline LightSpectrum operator+(const LightSpectrum &rhs) const {
-  	LightSpectrum l = LightSpectrum();
-  	for (int i = 0; i < num_channels; i++)
-  		l.intensities[i] = intensities[i] + rhs.intensities[i];
+  	LightSpectrum l = LightSpectrum(num_channels, min_wav, max_wav, valarray<double>(0.0, num_channels));
+  	l.intensities = intensities + rhs.intensities;
   	return l;
 }
 
   inline LightSpectrum &operator+=(const LightSpectrum &rhs) {
-    for (int i = 0; i < num_channels; i++)
-  		intensities[i] += rhs.intensities[i];
+  	intensities += rhs.intensities;
     return *this;
   }
 
   inline LightSpectrum operator-(const LightSpectrum &rhs) const {
-    LightSpectrum l = LightSpectrum();
-  	for (int i = 0; i < num_channels; i++)
-  		l.intensities[i] = intensities[i] - rhs.intensities[i];
+    LightSpectrum l = LightSpectrum(num_channels, min_wav, max_wav, valarray<double>(0.0, num_channels));
+  	l.intensities = intensities - rhs.intensities;
   	return l;
   }
 
   inline LightSpectrum &operator-=(const LightSpectrum &rhs) {
-    for (int i = 0; i < num_channels; i++)
-  		intensities[i] -= rhs.intensities[i];
+  	intensities -= rhs.intensities;
     return *this;
   }
 
   inline LightSpectrum operator*(const LightSpectrum &rhs) const {
-  	LightSpectrum l = LightSpectrum();
-  	for (int i = 0; i < num_channels; i++)
-  		l.intensities[i] = intensities[i] * rhs.intensities[i];
+    LightSpectrum l = LightSpectrum(num_channels, min_wav, max_wav, valarray<double>(0.0, num_channels));
+  	l.intensities = intensities * rhs.intensities;
   	return l;
   }
 
   inline LightSpectrum &operator*=(const LightSpectrum &rhs) {
-    for (int i = 0; i < num_channels; i++)
-  		intensities[i] *= rhs.intensities[i];
+  	intensities *= rhs.intensities;
     return *this;
   }
 
-  inline LightSpectrum operator*(float s) const {
-    LightSpectrum l = LightSpectrum();
-  	for (int i = 0; i < num_channels; i++)
-  		l.intensities[i] = intensities[i] * s;
+  inline LightSpectrum operator*(double s) const {
+    LightSpectrum l = LightSpectrum(num_channels, min_wav, max_wav, valarray<double>(s, num_channels));
+  	l.intensities = intensities * s;
   	return l;
   }
 
-  inline LightSpectrum &operator*=(float s) {
-    for (int i = 0; i < num_channels; i++)
-  		intensities[i] *= s;
+  inline LightSpectrum &operator*=(double s) {
+  	intensities *= s;
     return *this;
   }
 
-  inline LightSpectrum operator/(const LightSpectrum &rhs) const {
-    LightSpectrum l = LightSpectrum();
-  	for (int i = 0; i < num_channels; i++)
-  		l.intensities[i] = intensities[i] / rhs.intensities[i];
+  inline LightSpectrum operator/(const LightSpectrum &rhs) const {LightSpectrum l = LightSpectrum(num_channels, min_wav, max_wav, valarray<double>(0.0, num_channels));
+  	l.intensities = intensities / rhs.intensities;
   	return l;
   }
 
   inline LightSpectrum &operator/=(const LightSpectrum &rhs) {
-    for (int i = 0; i < num_channels; i++)
-  		intensities[i] /= rhs.intensities[i];
+  	intensities /= rhs.intensities;
     return *this;
   }
 
-  inline LightSpectrum operator/(float s) const {
-    LightSpectrum l = LightSpectrum();
-  	for (int i = 0; i < num_channels; i++)
-  		l.intensities[i] = intensities[i] / s;
+  inline LightSpectrum operator/(double s) const {
+    LightSpectrum l = LightSpectrum(num_channels, min_wav, max_wav, valarray<double>(s, num_channels));
+  	l.intensities = intensities / s;
   	return l;
   }
 
   inline LightSpectrum &operator/=(float s) {
-    for (int i = 0; i < num_channels; i++)
-  		intensities[i] /= s;
+  	intensities /= s;
     return *this;
   }
 

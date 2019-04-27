@@ -36,7 +36,8 @@ namespace CGL {
 		double dParam1 = (wavelen-442.0)*((wavelen < 442.0)?0.0624:0.0374);
 		double dParam2 = (wavelen-599.8)*((wavelen < 599.8)?0.0264:0.0323);
 		double dParam3 = (wavelen-501.1)*((wavelen < 501.1)?0.0490:0.0382);
-		return 0.362*exp(-0.5*dParam1*dParam1) + 1.056*exp(-0.5*dParam2*dParam2);
+		return 0.362*exp(-0.5*dParam1*dParam1) + 1.056*exp(-0.5*dParam2*dParam2)
+						-0.065*exp(-0.5*dParam3*dParam3);
 	}
 
 	double LightSpectrum::CIE_Y(double wavelen) {
@@ -64,7 +65,8 @@ namespace CGL {
 		// XYZ.x = 10.0 / xyz.y * xyz.x;
 		// XYZ.y = 10.0 / xyz.y;
 		// XYZ.z = 10.0 / xyz.y * (1 - xyz.x - xyz.y);
-		return xyz * 10;
+		// cout << xyz << endl;
+		return xyz;
 	}
 
 	Spectrum LightSpectrum::toRGB(void) {
@@ -72,12 +74,12 @@ namespace CGL {
 		Returns native CGL, RGB Spectrum
 		*/
 		Matrix3x3 M_inv = Matrix3x3(
-			0.41847, -0.15866, -0.082835,
-			-0.091169, 0.25243, 0.015708,
-			0.00092090, -0.0025498, 0.17860
+			3.2404542, -1.5371385, -0.4985314,
+			-0.9692660, 1.8760108, 0.0415560,
+			0.0556434, -0.2040259, 1.0572252
 														);
 		Vector3D RGB = M_inv * toCIE_XYZ();
-		cout << RGB << endl;
+		// cout << RGB << endl;
 		return Spectrum(min(10.0, max(0.0, RGB[0])),
 										min(10.0, max(0.0, RGB[1])),
 										min(10.0, max(0.0, RGB[2])));
