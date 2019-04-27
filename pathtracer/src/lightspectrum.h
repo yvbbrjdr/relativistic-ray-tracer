@@ -3,11 +3,15 @@
 #include "CGL/vector3D.h"
 #include "CGL/spectrum.h"
 #include <valarray>
-#define DEFAULT_NUM 400
-#define DEFAULT_MIN 380.0
-#define DEFAULT_MAX 780.0
+#define DEFAULT_NUM 76
+#define DEFAULT_MIN 400.0
+#define DEFAULT_MAX 704.0
+
+#include <iostream>
 
 using std::valarray;
+
+using namespace std;
 
 namespace CGL {
 
@@ -20,11 +24,14 @@ class LightSpectrum {
 
   /*
   Currently only supports arithmetic on same size color channels.
-  Default range is 380nm to 740nm with step size 1nm
+  Default range is 400nm to 700nm with step size 4nm
   */
 
   LightSpectrum(int num_channels = DEFAULT_NUM, double min_wav = DEFAULT_MIN, double max_wav = DEFAULT_MAX, valarray<double> intensities = valarray<double>(DEFAULT_NUM))
   : num_channels(num_channels), min_wav(min_wav), max_wav(max_wav), intensities(intensities) {}
+
+  LightSpectrum(valarray<double> intensities) : num_channels(DEFAULT_NUM), 
+  min_wav(DEFAULT_MIN), max_wav(DEFAULT_MAX), intensities(intensities) {}
 
   inline LightSpectrum operator+(const LightSpectrum &rhs) const {
   	LightSpectrum l = LightSpectrum(num_channels, min_wav, max_wav, valarray<double>(0.0, num_channels));
@@ -97,8 +104,16 @@ class LightSpectrum {
   double CIE_Z(double lambda);
   Vector3D toCIE_XYZ(void);
   Spectrum toRGB(void);
+  static LightSpectrum whiteSpectrum(void);
+  static LightSpectrum redSpectrum(void);
+  static LightSpectrum greenSpectrum(void);
+  static LightSpectrum flourescentSpectrum(void);
 
 	}; // class LightSpectrum
-}
+  extern const LightSpectrum white_wall;
+  extern const LightSpectrum red_wall;
+  extern const LightSpectrum green_wall;
+  extern const LightSpectrum flourescent;
+} //class CGL
 
 #endif // CGL_LIGHTSPECTRUM_H

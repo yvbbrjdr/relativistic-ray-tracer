@@ -110,8 +110,8 @@ namespace CGL {
   LightSpectrum PathTracer::est_radiance_global_illumination(const Ray &r) {
     Intersection isect;
     Spectrum L_out;
-    // if (!bvh->intersect(r, &isect))
-    //   return envLight ? envLight->sample_dir(r) : L_out;
+    if (!bvh->intersect(r, &isect))
+      return LightSpectrum();
 #if ILLUM == 0
     return normal_shading(isect.n);
 #elif ILLUM == 1
@@ -132,6 +132,7 @@ namespace CGL {
   Spectrum PathTracer::raytrace_pixel(size_t x, size_t y, bool useThinLens) {
     Vector2D o = Vector2D(x, y);
     Spectrum ret;
+    LightSpectrum spectra = LightSpectrum();
     int i;
     double s1 = 0.0, s2 = 0.0;
     for (i = 0; i < ns_aa; ++i) {
@@ -149,26 +150,26 @@ namespace CGL {
         }
       }();
       r.depth = max_ray_depth;
-      LightSpectrum spectra = est_radiance_global_illumination(r);
-      Spectrum s = spectra.toRGB();
-      ret += s;
-#if ADAPTIVE == 1
-      double illum = s.illum();
-      s1 += illum;
-      s2 += illum * illum;
-      if ((i + 1) % samplesPerBatch == 0) {
-        double avg = s1 / (i + 1),
-               sd = sqrt((s2 - avg * s1) / i);
-        if (1.96 * sd / sqrt(i + 1) <= maxTolerance * avg) {
-          ++i;
-          break;
-        }
-      }
-#endif // ADAPTIVE
+      spectra += est_radiance_global_illumination(r);
+// #if ADAPTIVE == 1
+//       double illum = s.illum();
+//       s1 += illum;
+//       s2 += illum * illum;
+//       if ((i + 1) % samplesPerBatch == 0) {
+//         double avg = s1 / (i + 1),
+//                sd = sqrt((s2 - avg * s1) / i);
+//         if (1.96 * sd / sqrt(i + 1) <= maxTolerance * avg) {
+//           ++i;
+//           break;
+//         }
+//       }
+// #endif // ADAPTIVE
     }
     sampleCountBuffer[x + y * frameBuffer.w] = i;
-    ret /= i;
-    return ret;
+    spectra /= i;
+    // cout << ret << endl;
+    // cout << spectra.toRGB() << endl;
+    return spectra.toRGB();
   }
 
   // Diffuse BSDF //
@@ -197,15 +198,39 @@ namespace CGL {
   }
 
   LightSpectrum DiffuseBSDF::f(const Vector3D &wo, const Vector3D& wi, LightSpectrum &l) {
-    double step_size = (l.max_wav - l.min_wav) / l.num_channels;
-    #pragma omp parallel for
-    for (int i = 0; i < l.num_channels; i++) {
-      double wav = l.min_wav + i * step_size;
-      l.intensities[i] *= reflectance.r * red_reflect(wav)
-                          + reflectance.g * green_reflect(wav)
-                          + reflectance.b * blue_reflect(wav);
+    if (reflectance.r == reflectance.g &&
+        reflectance.r == reflectance.b &&
+        reflectance.g == reflectance.b) //white wall effect
+    {
+      l *= l.whiteSpectrum();
+      return l;
     }
-    return l;
+    else if (reflectance.r == 0.6f &&
+             reflectance.g == 0.2f &&
+             reflectance.b == 0.2f) // this is the redwall hard code
+    {
+      l *= l.redSpectrum();
+      return l;
+    }
+    else if (reflectance.r == 0.2f &&
+             reflectance.g == 0.2f &&
+             reflectance.b == 0.6f) // green right wall
+    {
+      l *= l.greenSpectrum();
+      return l;
+    }
+    else
+    {
+      double step_size = (l.max_wav - l.min_wav) / l.num_channels;
+      #pragma omp parallel for
+      for (int i = 0; i < l.num_channels; i++) {
+        double wav = l.min_wav + i * step_size;
+        l.intensities[i] *= reflectance.r * red_reflect(wav)
+                            + reflectance.g * green_reflect(wav)
+                            + reflectance.b * blue_reflect(wav);
+      }
+      return l;
+    }
   }
 
   LightSpectrum DiffuseBSDF::sample_f(const Vector3D& wo, Vector3D* wi, float* pdf) {

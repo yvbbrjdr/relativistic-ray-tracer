@@ -30,6 +30,21 @@ namespace CGL {
 		return LightSpectrum::toRGB();
 	}
 
+	LightSpectrum BlackBodySpectrum::whiteSpectrum(void) {
+		return LightSpectrum::whiteSpectrum();
+	}
+
+	LightSpectrum BlackBodySpectrum::greenSpectrum(void) {
+		return LightSpectrum::greenSpectrum();
+	}
+
+	LightSpectrum BlackBodySpectrum::redSpectrum(void) {
+		return LightSpectrum::redSpectrum();
+	}
+
+	LightSpectrum BlackBodySpectrum::flourescentSpectrum(void) {
+		return LightSpectrum::flourescentSpectrum();
+	}
 
 
 } //namespace CGL

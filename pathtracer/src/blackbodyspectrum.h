@@ -1,7 +1,6 @@
 #ifndef CGL_BLACKBODY_H
 #define CGL_BLACKBODY_H
-
-#define DEFAULT_T 3000.0
+#define DEFAULT_T 10000
 #include "lightspectrum.h"
 #define WEIN 2.8977729e6
 #include <iostream>
@@ -24,6 +23,10 @@ namespace CGL {
 		double planck_distribution(double lambda);
 		BlackBodySpectrum doppler(double s);
 		Spectrum toRGB(void);
+		static LightSpectrum whiteSpectrum(void);
+	  static LightSpectrum redSpectrum(void);
+	  static LightSpectrum greenSpectrum(void);
+	  static LightSpectrum flourescentSpectrum(void);
 	}; //class BlackBodySpectrum
 }
 

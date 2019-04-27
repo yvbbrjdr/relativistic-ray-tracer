@@ -11,9 +11,10 @@
 #include "sampler.h"
 #include "image.h"
 #include "blackbodyspectrum.h"
+#include "lightspectrum.h"
 #include <iostream>
 #include <string>
-
+#include <valarray>
 #include <algorithm>
 
 using namespace std;
@@ -258,13 +259,13 @@ class EmissionBSDF : public BSDF {
   EmissionBSDF(const Spectrum& radiance) : radiance(radiance) { }
 
   Spectrum f(const Vector3D& wo, const Vector3D& wi);
-  LightSpectrum f(const Vector3D &wo, const Vector3D& wi, LightSpectrum &l) {return LightSpectrum();}
+  LightSpectrum f(const Vector3D &wo, const Vector3D& wi, LightSpectrum &l) {
+    valarray<double> spectra = valarray<double>(0.78, DEFAULT_NUM);
+    return LightSpectrum(spectra);
+  }
   LightSpectrum sample_f(const Vector3D& wo, Vector3D* wi, float* pdf);
   LightSpectrum get_emission() const {
-    LightSpectrum b = BlackBodySpectrum();
-    // Spectrum s = b.toRGB();
-    // cout << s << endl;
-    return b;
+    return flourescent;
   }
   bool is_delta() const { return false; }
 
