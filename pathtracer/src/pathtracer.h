@@ -188,13 +188,13 @@ class PathTracer {
   /**
    * Trace an ray in the scene.
    */
-  Spectrum estimate_direct_lighting_hemisphere(const Ray &r, const StaticScene::Intersection& isect);
+  LightSpectrum estimate_direct_lighting_hemisphere(const Ray &r, const StaticScene::Intersection& isect);
   Spectrum estimate_direct_lighting_importance(const Ray &r, const StaticScene::Intersection& isect);
 
-  Spectrum est_radiance_global_illumination(const Ray &r);
-  Spectrum zero_bounce_radiance(const Ray &r, const StaticScene::Intersection& isect);
-  Spectrum one_bounce_radiance(const Ray &r, const StaticScene::Intersection& isect);
-  Spectrum at_least_one_bounce_radiance(const Ray &r, const StaticScene::Intersection& isect);
+  LightSpectrum est_radiance_global_illumination(const Ray &r);
+  LightSpectrum zero_bounce_radiance(const Ray &r, const StaticScene::Intersection& isect);
+  LightSpectrum one_bounce_radiance(const Ray &r, const StaticScene::Intersection& isect);
+  LightSpectrum at_least_one_bounce_radiance(const Ray &r, const StaticScene::Intersection& isect);
 
   Spectrum normal_shading(const Vector3D& n) {
     return Spectrum(n[0],n[1],n[2])*.5 + Spectrum(.5,.5,.5);

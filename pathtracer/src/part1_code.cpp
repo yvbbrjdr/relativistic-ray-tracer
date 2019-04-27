@@ -4,6 +4,8 @@
 
 #include "part1_code.h"
 #include <time.h>
+#include "lightspectrum.h"
+#include <omp.h>
 
 using namespace CGL::StaticScene;
 
@@ -12,21 +14,26 @@ using std::max;
 
 namespace CGL {
 
-  Spectrum PathTracer::estimate_direct_lighting_hemisphere(const Ray& r, const Intersection& isect) {
+  LightSpectrum PathTracer::estimate_direct_lighting_hemisphere(const Ray& r, const Intersection& isect) {
     Matrix3x3 o2w;
     make_coord_space(o2w, isect.n);
     Matrix3x3 w2o = o2w.T();
     const Vector3D& hit_p = isect.hit_p;
     const Vector3D& w_out = w2o * isect.w_out;
     int num_samples = scene->lights.size() * ns_area_light;
-    Spectrum L_out;
+    LightSpectrum L_out = LightSpectrum();
     for (int i = 0; i < num_samples; ++i) {
       Vector3D w_in = hemisphereSampler->get_sample();
       Vector3D wi_world = o2w * w_in;
       Intersection isect2;
       if (bvh->intersect(Ray(hit_p + EPS_D * wi_world, wi_world), &isect2))
-        L_out += isect2.bsdf->get_emission() * isect.bsdf->f(w_out, w_in) * w_in.z;
+      {
+        LightSpectrum emission = isect2.bsdf->get_emission();
+        LightSpectrum reflected_spectra = isect.bsdf->f(w_out, w_in, emission);
+        L_out += reflected_spectra * w_in.z;
+      }
     }
+    L_out *= 2 * M_PI / num_samples;
     return L_out * 2 * M_PI / num_samples;
   }
 
@@ -56,23 +63,23 @@ namespace CGL {
     return L_out / total_num_samples;
   }
 
-  Spectrum PathTracer::zero_bounce_radiance(const Ray&r, const Intersection& isect) {
+  LightSpectrum PathTracer::zero_bounce_radiance(const Ray&r, const Intersection& isect) {
     return isect.bsdf->get_emission();
   }
 
-  Spectrum PathTracer::one_bounce_radiance(const Ray&r, const Intersection& isect) {
+  LightSpectrum PathTracer::one_bounce_radiance(const Ray&r, const Intersection& isect) {
     if (direct_hemisphere_sample)
       return estimate_direct_lighting_hemisphere(r, isect);
-    return estimate_direct_lighting_importance(r, isect);
+    return estimate_direct_lighting_hemisphere(r, isect);
   }
 
-  Spectrum PathTracer::at_least_one_bounce_radiance(const Ray&r, const Intersection& isect) {
+  LightSpectrum PathTracer::at_least_one_bounce_radiance(const Ray&r, const Intersection& isect) {
     Matrix3x3 o2w;
     make_coord_space(o2w, isect.n);
     Matrix3x3 w2o = o2w.T();
     Vector3D hit_p = isect.hit_p;
     Vector3D w_out = w2o * isect.w_out;
-    Spectrum L_out;
+    LightSpectrum L_out;
     if (!isect.bsdf->is_delta())
       L_out += one_bounce_radiance(r, isect);
 #if ILLUM == 3
@@ -83,7 +90,7 @@ namespace CGL {
     if (r.depth == max_ray_depth || (r.depth > 1 && coin_flip(prob))) {
       Vector3D w_in;
       float pdf;
-      Spectrum sample = isect.bsdf->sample_f(w_out, &w_in, &pdf);
+      LightSpectrum sample = isect.bsdf->sample_f(w_out, &w_in, &pdf);
       if (pdf == 0.0f)
         return L_out;
       Vector3D wi_world = o2w * w_in;
@@ -91,7 +98,7 @@ namespace CGL {
       r2.depth = r.depth - 1;
       Intersection isect2;
       if (bvh->intersect(r2, &isect2)) {
-        Spectrum L = at_least_one_bounce_radiance(r2, isect2);
+        LightSpectrum L = at_least_one_bounce_radiance(r2, isect2);
         if (isect.bsdf->is_delta())
           L += zero_bounce_radiance(r2, isect2);
         L_out += L * sample * abs(w_in.z) / pdf / prob;
@@ -100,11 +107,11 @@ namespace CGL {
     return L_out;
   }
 
-  Spectrum PathTracer::est_radiance_global_illumination(const Ray &r) {
+  LightSpectrum PathTracer::est_radiance_global_illumination(const Ray &r) {
     Intersection isect;
     Spectrum L_out;
-    if (!bvh->intersect(r, &isect))
-      return envLight ? envLight->sample_dir(r) : L_out;
+    // if (!bvh->intersect(r, &isect))
+    //   return envLight ? envLight->sample_dir(r) : L_out;
 #if ILLUM == 0
     return normal_shading(isect.n);
 #elif ILLUM == 1
@@ -142,7 +149,8 @@ namespace CGL {
         }
       }();
       r.depth = max_ray_depth;
-      Spectrum s = est_radiance_global_illumination(r);
+      LightSpectrum spectra = est_radiance_global_illumination(r);
+      Spectrum s = spectra.toRGB();
       ret += s;
 #if ADAPTIVE == 1
       double illum = s.illum();
@@ -159,7 +167,8 @@ namespace CGL {
 #endif // ADAPTIVE
     }
     sampleCountBuffer[x + y * frameBuffer.w] = i;
-    return ret / i;
+    ret /= i;
+    return ret;
   }
 
   // Diffuse BSDF //
@@ -168,8 +177,40 @@ namespace CGL {
     return reflectance / M_PI;
   }
 
-  Spectrum DiffuseBSDF::sample_f(const Vector3D& wo, Vector3D* wi, float* pdf) {
-    return f(wo, *wi = sampler.get_sample(pdf));
+  double softmax(double x, double k, double x0) {
+    return 0.95 / (1 + exp(-k * (x - x0)));
+  }
+
+  double red_reflect(double wav) {
+    return softmax(wav, 5.0, 590.0);
+  }
+
+  double blue_reflect(double wav) {
+    return softmax(-wav, 5.0, 490.0);
+  }
+
+  double green_reflect(double wav) {
+    if (wav < 540.0)
+      return softmax(wav, 5.0, 490.0);
+    else
+      return softmax(-wav, 5.0, 590.0);
+  }
+
+  LightSpectrum DiffuseBSDF::f(const Vector3D &wo, const Vector3D& wi, LightSpectrum &l) {
+    double step_size = (l.max_wav - l.min_wav) / l.num_channels;
+    #pragma omp parallel for
+    for (int i = 0; i < l.num_channels; i++) {
+      double wav = l.min_wav + i * step_size;
+      l.intensities[i] *= reflectance.r * red_reflect(wav)
+                          + reflectance.g * green_reflect(wav)
+                          + reflectance.b * blue_reflect(wav);
+    }
+    return l;
+  }
+
+  LightSpectrum DiffuseBSDF::sample_f(const Vector3D& wo, Vector3D* wi, float* pdf) {
+    return LightSpectrum();
+    // return f(wo, *wi = sampler.get_sample(pdf), NULL);
   }
 
   // Camera //

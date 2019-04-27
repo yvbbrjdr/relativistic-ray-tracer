@@ -1,9 +1,9 @@
 #include "lightspectrum.h"
-#include <vector>
 #include "CGL/vector3D.h"
 #include "CGL/matrix3x3.h"
 #include "CGL/spectrum.h"
 #include <iostream>
+#include <omp.h>
 
 using namespace std;
 
@@ -17,6 +17,7 @@ namespace CGL {
 		*/
 		LightSpectrum l = LightSpectrum();
 		double step_size = (max_wav - min_wav) / num_channels;
+		#pragma omp parallel for
 		for (int i = 0; i < num_channels; i++) {
 			double lambda = min_wav + i * step_size;
 			if (lambda > s * max_wav ||
@@ -55,6 +56,7 @@ namespace CGL {
 	Vector3D LightSpectrum::toCIE_XYZ(void) {
 		double step_size = (max_wav - min_wav) / num_channels;
 		Vector3D XYZ = Vector3D();
+		#pragma omp parallel for
 		for (int i = 0; i < num_channels; i++) {
 			double lambda = min_wav + i * step_size;
 			XYZ.x += step_size * CIE_X(lambda) * intensities[i];

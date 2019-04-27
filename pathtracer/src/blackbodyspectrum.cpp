@@ -2,6 +2,7 @@
 #include "CGL/vector3D.h"
 #include "CGL/spectrum.h"
 #include <vector>
+#include <omp.h>
 
 using std::vector;
 
@@ -17,6 +18,7 @@ namespace CGL {
 	BlackBodySpectrum BlackBodySpectrum::doppler(double s) {
 		BlackBodySpectrum b = BlackBodySpectrum(num_channels, min_wav, max_wav, T);
 		double step_size = (max_wav - min_wav) / num_channels;
+		#pragma omp parallel for
 		for (int i = 0; i < num_channels; i++) {
 				double lambda = min_wav + i * step_size;
 				b.intensities[i] = planck_distribution(lambda / s);
