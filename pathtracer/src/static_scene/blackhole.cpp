@@ -2,7 +2,7 @@
 
 namespace CGL { namespace StaticScene {
 
-BlackHole global_black_hole(nullptr, Vector3D(0, 1, 0), 0.1, 0.1);
+BlackHole global_black_hole(nullptr, Vector3D(-0.8, 1.2, 0), 0.1, 0.1);
 
 BlackHole::BlackHole(const SphereObject* object, const Vector3D& o, double r, double delta_theta) : Sphere(object, o, r), delta_theta(delta_theta) {}
 

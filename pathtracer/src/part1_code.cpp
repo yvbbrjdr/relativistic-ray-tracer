@@ -6,6 +6,7 @@
 #include <time.h>
 #include "lightspectrum.h"
 #include <omp.h>
+#include "static_scene/blackhole.h"
 
 using namespace CGL::StaticScene;
 
@@ -29,8 +30,12 @@ namespace CGL {
       if (bvh->intersect(Ray(hit_p + EPS_D * wi_world, wi_world), &isect2))
       {
         LightSpectrum emission = isect2.bsdf->get_emission();
+        double r1 = (isect.hit_p - global_black_hole.o).norm();
+        double r2 = (isect2.hit_p - global_black_hole.o).norm();
+        double reduction = 0.5;
+        double shift = sqrt((r1 - global_black_hole.r / reduction) * r2 / ((r2 - global_black_hole.r / reduction ) * r1));
         LightSpectrum reflected_spectra = isect.bsdf->spectrum_f(w_out, w_in);
-        L_out += emission * reflected_spectra * w_in.z;
+        L_out += emission.doppler(shift) * reflected_spectra * w_in.z;
       }
     }
     L_out *= 2 * M_PI / num_samples;

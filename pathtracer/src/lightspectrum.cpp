@@ -27,14 +27,17 @@ namespace CGL {
 		#pragma omp parallel for
 		for (int i = 0; i < num_channels; i++) {
 			double lambda = min_wav + i * step_size;
-			if (lambda > s * max_wav ||
-					min_wav * s < lambda)
+			if (lambda * s > max_wav ||
+					min_wav > s * lambda)
 				l.intensities[i] = 0;
 			else
 			{
-				lambda /= s;
+				lambda *= s;
 				int j = (int) floor((lambda - min_wav) / step_size);
-				l.intensities[i] = intensities[j];
+				if (j < 0 || j >= num_channels)
+					continue;
+				else
+					l.intensities[j] = intensities[i];
 			}
 		}
 		return l;
@@ -87,7 +90,7 @@ namespace CGL {
 			-0.9692660, 1.8760108, 0.0415560,
 			0.0556434, -0.2040259, 1.0572252
 			);
-		Vector3D XYZ = toCIE_XYZ() * 4e-4;
+		Vector3D XYZ = toCIE_XYZ() * 1;
 		Vector3D RGB;
 		// cout << XYZ.y << endl;
 		RGB = M_inv * XYZ;
