@@ -160,20 +160,21 @@ namespace CGL {
         }
       }();
       r.depth = max_ray_depth;
-      spectra += est_radiance_global_illumination(r);
-// #if ADAPTIVE == 1
-//       double illum = s.illum();
-//       s1 += illum;
-//       s2 += illum * illum;
-//       if ((i + 1) % samplesPerBatch == 0) {
-//         double avg = s1 / (i + 1),
-//                sd = sqrt((s2 - avg * s1) / i);
-//         if (1.96 * sd / sqrt(i + 1) <= maxTolerance * avg) {
-//           ++i;
-//           break;
-//         }
-//       }
-// #endif // ADAPTIVE
+      LightSpectrum s = est_radiance_global_illumination(r);
+      spectra += s;
+#if ADAPTIVE == 1
+      double illum = s.toRGB().illum();
+      s1 += illum;
+      s2 += illum * illum;
+      if ((i + 1) % samplesPerBatch == 0) {
+        double avg = s1 / (i + 1),
+               sd = sqrt((s2 - avg * s1) / i);
+        if (1.96 * sd / sqrt(i + 1) <= maxTolerance * avg) {
+          ++i;
+          break;
+        }
+      }
+#endif // ADAPTIVE
     }
     sampleCountBuffer[x + y * frameBuffer.w] = i;
     spectra /= i;
