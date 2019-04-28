@@ -29,8 +29,8 @@ namespace CGL {
       if (bvh->intersect(Ray(hit_p + EPS_D * wi_world, wi_world), &isect2))
       {
         LightSpectrum emission = isect2.bsdf->get_emission();
-        LightSpectrum reflected_spectra = isect.bsdf->f(w_out, w_in, emission);
-        L_out += reflected_spectra * w_in.z;
+        LightSpectrum reflected_spectra = isect.bsdf->spectrum_f(w_out, w_in);
+        L_out += emission * reflected_spectra * w_in.z;
       }
     }
     L_out *= 2 * M_PI / num_samples;
@@ -84,13 +84,13 @@ namespace CGL {
       L_out += one_bounce_radiance(r, isect);
 #if ILLUM == 3
     if (max_ray_depth == r.depth)
-      L_out = Spectrum();
+      L_out = LightSpectrum();
 #endif // ILLUM
     const double prob = 0.7;
     if (r.depth == max_ray_depth || (r.depth > 1 && coin_flip(prob))) {
       Vector3D w_in;
       float pdf;
-      LightSpectrum sample = isect.bsdf->sample_f(w_out, &w_in, &pdf);
+      LightSpectrum sample = isect.bsdf->sample_spectrum_f(w_out, &w_in, &pdf);
       if (pdf == 0.0f)
         return L_out;
       Vector3D wi_world = o2w * w_in;
@@ -99,8 +99,9 @@ namespace CGL {
       Intersection isect2;
       if (bvh->intersect(r2, &isect2)) {
         LightSpectrum L = at_least_one_bounce_radiance(r2, isect2);
-        if (isect.bsdf->is_delta())
+        if (isect.bsdf->is_delta()) {
           L += zero_bounce_radiance(r2, isect2);
+        }
         L_out += L * sample * abs(w_in.z) / pdf / prob;
       }
     }
@@ -197,45 +198,48 @@ namespace CGL {
       return softmax(-wav, 5.0, 590.0);
   }
 
-  LightSpectrum DiffuseBSDF::f(const Vector3D &wo, const Vector3D& wi, LightSpectrum &l) {
+  LightSpectrum DiffuseBSDF::spectrum_f(const Vector3D &wo, const Vector3D& wi) {
+    LightSpectrum ret = LightSpectrum();
     if (reflectance.r == reflectance.g &&
         reflectance.r == reflectance.b &&
         reflectance.g == reflectance.b) //white wall effect
     {
-      l *= l.whiteSpectrum();
-      return l;
+      return ret.whiteSpectrum() / M_PI;
     }
     else if (reflectance.r == 0.6f &&
              reflectance.g == 0.2f &&
              reflectance.b == 0.2f) // this is the redwall hard code
     {
-      l *= l.redSpectrum();
-      return l;
+      return ret.redSpectrum() / M_PI;
     }
     else if (reflectance.r == 0.2f &&
              reflectance.g == 0.2f &&
              reflectance.b == 0.6f) // green right wall
     {
-      l *= l.greenSpectrum();
-      return l;
+      return ret.greenSpectrum() / M_PI;
     }
     else
     {
-      double step_size = (l.max_wav - l.min_wav) / l.num_channels;
+      double step_size = (ret.max_wav - ret.min_wav) / ret.num_channels;
+
       #pragma omp parallel for
-      for (int i = 0; i < l.num_channels; i++) {
-        double wav = l.min_wav + i * step_size;
-        l.intensities[i] *= reflectance.r * red_reflect(wav)
+      for (int i = 0; i < ret.num_channels; i++) {
+        double wav = ret.min_wav + i * step_size;
+        ret.intensities[i] *= reflectance.r * red_reflect(wav)
                             + reflectance.g * green_reflect(wav)
                             + reflectance.b * blue_reflect(wav);
       }
-      return l;
+      return ret;
     }
   }
 
   LightSpectrum DiffuseBSDF::sample_f(const Vector3D& wo, Vector3D* wi, float* pdf) {
     return LightSpectrum();
-    // return f(wo, *wi = sampler.get_sample(pdf), NULL);
+    // return f(wo, *wi = sampler.get_sample(pdf), _);
+  }
+
+  LightSpectrum DiffuseBSDF::sample_spectrum_f(const Vector3D& wo, Vector3D* wi, float* pdf) {
+    return spectrum_f(wo, *wi = sampler.get_sample(pdf));
   }
 
   // Camera //

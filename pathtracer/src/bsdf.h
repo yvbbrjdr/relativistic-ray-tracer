@@ -74,7 +74,9 @@ class BSDF {
    */
   virtual Spectrum f (const Vector3D& wo, const Vector3D& wi) = 0;
 
-  virtual LightSpectrum f(const Vector3D &wo, const Vector3D& wi, LightSpectrum &l) = 0;
+  virtual LightSpectrum spectrum_f(const Vector3D &wo, const Vector3D& wi) = 0;
+
+  virtual LightSpectrum sample_spectrum_f(const Vector3D& wo, Vector3D* wi, float* pdf) = 0;
 
   /**
    * Evaluate BSDF.
@@ -129,8 +131,9 @@ class DiffuseBSDF : public BSDF {
   DiffuseBSDF(const Spectrum& a) : reflectance(a) { }
 
   Spectrum f(const Vector3D& wo, const Vector3D& wi);
-  LightSpectrum f(const Vector3D &wo, const Vector3D& wi, LightSpectrum &l);
+  LightSpectrum spectrum_f(const Vector3D &wo, const Vector3D& wi);
   LightSpectrum sample_f(const Vector3D& wo, Vector3D* wi, float* pdf);
+  LightSpectrum sample_spectrum_f(const Vector3D& wo, Vector3D* wi, float* pdf);
   LightSpectrum get_emission() const { return LightSpectrum();}
   bool is_delta() const { return false; }
 
@@ -150,8 +153,9 @@ class MirrorBSDF : public BSDF {
   MirrorBSDF(const Spectrum& reflectance) : reflectance(reflectance) { }
 
   Spectrum f(const Vector3D& wo, const Vector3D& wi);
-  LightSpectrum f(const Vector3D &wo, const Vector3D& wi, LightSpectrum &l) {return LightSpectrum();}
+  LightSpectrum spectrum_f(const Vector3D &wo, const Vector3D& wi) {return LightSpectrum();}
   LightSpectrum sample_f(const Vector3D& wo, Vector3D* wi, float* pdf);
+  LightSpectrum sample_spectrum_f(const Vector3D& wo, Vector3D* wi, float* pdf) {return LightSpectrum();}
   LightSpectrum get_emission() const { return LightSpectrum(); }
   bool is_delta() const { return true; }
 
@@ -189,9 +193,10 @@ class MicrofacetBSDF : public BSDF {
   double D(const Vector3D& h);
 
   Spectrum f(const Vector3D& wo, const Vector3D& wi);
-  LightSpectrum f(const Vector3D &wo, const Vector3D& wi, LightSpectrum &l) {return LightSpectrum();}
+  LightSpectrum spectrum_f(const Vector3D &wo, const Vector3D& wi) {return LightSpectrum();}
   LightSpectrum sample_f(const Vector3D& wo, Vector3D* wi, float* pdf);
   LightSpectrum get_emission() const { return LightSpectrum(); }
+  LightSpectrum sample_spectrum_f(const Vector3D& wo, Vector3D* wi, float* pdf) {return LightSpectrum();}
   bool is_delta() const { return false; }
 
 private:
@@ -211,7 +216,8 @@ class RefractionBSDF : public BSDF {
     : transmittance(transmittance), roughness(roughness), ior(ior) { }
 
   Spectrum f(const Vector3D& wo, const Vector3D& wi);
-  LightSpectrum f(const Vector3D &wo, const Vector3D& wi, LightSpectrum &l) {return LightSpectrum();}
+  LightSpectrum spectrum_f(const Vector3D &wo, const Vector3D& wi) {return LightSpectrum();}
+  LightSpectrum sample_spectrum_f(const Vector3D& wo, Vector3D* wi, float* pdf) {return LightSpectrum();}
   LightSpectrum sample_f(const Vector3D& wo, Vector3D* wi, float* pdf);
   LightSpectrum get_emission() const { return LightSpectrum(); }
   bool is_delta() const { return true; }
@@ -236,7 +242,8 @@ class GlassBSDF : public BSDF {
     roughness(roughness), ior(ior) { }
 
   Spectrum f(const Vector3D& wo, const Vector3D& wi);
-  LightSpectrum f(const Vector3D &wo, const Vector3D& wi, LightSpectrum &l) {return LightSpectrum();}
+  LightSpectrum spectrum_f(const Vector3D &wo, const Vector3D& wi) {return LightSpectrum();}
+  LightSpectrum sample_spectrum_f(const Vector3D& wo, Vector3D* wi, float* pdf) {return LightSpectrum();}
   LightSpectrum sample_f(const Vector3D& wo, Vector3D* wi, float* pdf);
   LightSpectrum get_emission() const { return LightSpectrum(); }
   bool is_delta() const { return true; }
@@ -259,10 +266,8 @@ class EmissionBSDF : public BSDF {
   EmissionBSDF(const Spectrum& radiance) : radiance(radiance) { }
 
   Spectrum f(const Vector3D& wo, const Vector3D& wi);
-  LightSpectrum f(const Vector3D &wo, const Vector3D& wi, LightSpectrum &l) {
-    valarray<double> spectra = valarray<double>(0.78, DEFAULT_NUM);
-    return LightSpectrum(spectra);
-  }
+  LightSpectrum spectrum_f(const Vector3D &wo, const Vector3D& wi) {return LightSpectrum(valarray<double>(0.78, DEFAULT_NUM));}
+  LightSpectrum sample_spectrum_f(const Vector3D& wo, Vector3D* wi, float* pdf) {return LightSpectrum();}
   LightSpectrum sample_f(const Vector3D& wo, Vector3D* wi, float* pdf);
   LightSpectrum get_emission() const {
     return flourescent;

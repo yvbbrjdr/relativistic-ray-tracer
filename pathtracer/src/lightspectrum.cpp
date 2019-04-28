@@ -87,11 +87,11 @@ namespace CGL {
 			-0.9692660, 1.8760108, 0.0415560,
 			0.0556434, -0.2040259, 1.0572252
 			);
-		Vector3D XYZ = toCIE_XYZ() * 10e-4;
+		Vector3D XYZ = toCIE_XYZ() * 4e-4;
 		Vector3D RGB;
 		// cout << XYZ.y << endl;
 		RGB = M_inv * XYZ;
-		// cout << sRGB << endl;
+		// cout << RGB << endl;
 		// return Spectrum(max(0.0, RGB[0]),
 		// 				max(0.0, RGB[1]),
 		// 				max(0.0, RGB[2]));

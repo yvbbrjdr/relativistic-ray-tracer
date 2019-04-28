@@ -27,10 +27,10 @@ class LightSpectrum {
   Default range is 400nm to 700nm with step size 4nm
   */
 
-  LightSpectrum(int num_channels = DEFAULT_NUM, double min_wav = DEFAULT_MIN, double max_wav = DEFAULT_MAX, valarray<double> intensities = valarray<double>(DEFAULT_NUM))
+  LightSpectrum(int num_channels = DEFAULT_NUM, double min_wav = DEFAULT_MIN, double max_wav = DEFAULT_MAX, valarray<double> intensities = valarray<double>(0.0, DEFAULT_NUM))
   : num_channels(num_channels), min_wav(min_wav), max_wav(max_wav), intensities(intensities) {}
 
-  LightSpectrum(valarray<double> intensities) : num_channels(DEFAULT_NUM), 
+  LightSpectrum(valarray<double> intensities) : num_channels(DEFAULT_NUM),
   min_wav(DEFAULT_MIN), max_wav(DEFAULT_MAX), intensities(intensities) {}
 
   inline LightSpectrum operator+(const LightSpectrum &rhs) const {
