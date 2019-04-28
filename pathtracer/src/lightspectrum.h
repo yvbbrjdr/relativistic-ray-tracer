@@ -98,6 +98,10 @@ class LightSpectrum {
     return *this;
   }
 
+  inline double gaussian_pdf(double x, double mean, double variance) {
+    return exp(-(x - mean) * (x - mean) / (2 * variance)) / sqrt(2 * M_PI * variance);
+  }
+
   LightSpectrum doppler(double s);
   double CIE_X(double lambda);
   double CIE_Y(double lambda);

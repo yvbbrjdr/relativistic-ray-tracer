@@ -24,20 +24,11 @@ namespace CGL {
 		*/
 		LightSpectrum l = LightSpectrum();
 		double step_size = (max_wav - min_wav) / num_channels;
-		#pragma omp parallel for
 		for (int i = 0; i < num_channels; i++) {
-			double lambda = min_wav + i * step_size;
-			if (lambda * s > max_wav ||
-					min_wav > s * lambda)
-				l.intensities[i] = 0;
-			else
-			{
-				lambda *= s;
-				int j = (int) floor((lambda - min_wav) / step_size);
-				if (j < 0 || j >= num_channels)
-					continue;
-				else
-					l.intensities[j] = intensities[i];
+			double lambda_i = min_wav + i * step_size;
+			for (int j = 0; j < num_channels; j++) {
+				double lambda_j = (min_wav + j * step_size) * s;
+				l.intensities[i] += intensities[j] * gaussian_pdf(lambda_i, lambda_j, step_size);
 			}
 		}
 		return l;

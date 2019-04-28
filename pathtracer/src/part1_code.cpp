@@ -110,7 +110,11 @@ namespace CGL {
         L_out += L * sample * abs(w_in.z) / pdf / prob;
       }
     }
-    return L_out;
+    double r1 = (r.o - global_black_hole.o).norm();
+    double r2 = (isect.hit_p - global_black_hole.o).norm();
+    double reduction = 0.5;
+    double shift = sqrt((r1 - global_black_hole.r / reduction) * r2 / ((r2 - global_black_hole.r / reduction ) * r1));
+    return L_out.doppler(shift);
   }
 
   LightSpectrum PathTracer::est_radiance_global_illumination(const Ray &r) {
