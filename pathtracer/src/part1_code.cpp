@@ -32,8 +32,7 @@ namespace CGL {
         LightSpectrum emission = isect2.bsdf->get_emission();
         double r1 = (isect.hit_p - global_black_hole.o).norm();
         double r2 = (isect2.hit_p - global_black_hole.o).norm();
-        double reduction = 0.5;
-        double shift = sqrt((r1 - global_black_hole.r / reduction) * r2 / ((r2 - global_black_hole.r / reduction ) * r1));
+        double shift = sqrt((r1 - global_black_hole.r) * r2 / ((r2 - global_black_hole.r) * r1));
         LightSpectrum reflected_spectra = isect.bsdf->spectrum_f(w_out, w_in);
         L_out += emission.doppler(shift) * reflected_spectra * w_in.z;
       }
@@ -69,7 +68,10 @@ namespace CGL {
   }
 
   LightSpectrum PathTracer::zero_bounce_radiance(const Ray&r, const Intersection& isect) {
-    return isect.bsdf->get_emission();
+    double r1 = (r.o - global_black_hole.o).norm();
+    double r2 = (isect.hit_p - global_black_hole.o).norm();
+    double shift = sqrt((r1 - global_black_hole.r) * r2 / ((r2 - global_black_hole.r) * r1));
+    return isect.bsdf->get_emission().doppler(shift);
   }
 
   LightSpectrum PathTracer::one_bounce_radiance(const Ray&r, const Intersection& isect) {
@@ -112,8 +114,7 @@ namespace CGL {
     }
     double r1 = (r.o - global_black_hole.o).norm();
     double r2 = (isect.hit_p - global_black_hole.o).norm();
-    double reduction = 0.5;
-    double shift = sqrt((r1 - global_black_hole.r / reduction) * r2 / ((r2 - global_black_hole.r / reduction ) * r1));
+    double shift = sqrt((r1 - global_black_hole.r) * r2 / ((r2 - global_black_hole.r) * r1));
     return L_out.doppler(shift);
   }
 
