@@ -19,6 +19,7 @@
 #include "static_scene/sphere.h"
 #include "static_scene/triangle.h"
 #include "static_scene/light.h"
+#include "static_scene/blackhole.h"
 
 
 using namespace CGL::StaticScene;
@@ -353,6 +354,8 @@ void PathTracer::visualize_accel() const {
     bvh->draw(selected->l, cprim_hl_left, cprim_hl_left_alpha);
     bvh->draw(selected->r, cprim_hl_right, cprim_hl_right_alpha);
   }
+
+  global_black_hole.draw(Color(0, 0, 0), 1);
 
   glDisable(GL_POLYGON_OFFSET_FILL);
 
