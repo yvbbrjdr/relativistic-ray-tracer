@@ -60,7 +60,7 @@
 
 % The abstract is a short summary of the work to be presented in the article.
 \begin{abstract}
-We report a ray tracing algorithm in which we can quantitatively generate realistic images in a scene with a black hole.  The problem of illustrating what a black hole would look like has been explored previously in works such as the movie Interstellar[1]. However, almost all of these assume purely emissive light sources and very distant light sources that would be represented as environment maps.  In this paper, we present a ray tracer for a scene with a Schwarzchild black hole in diffuse lighting conditions.
+We report a ray tracing algorithm in which we can quantitatively generate realistic images in a scene with a black hole.  The problem of illustrating what a black hole would look like has been explored previously in works such as the movie Interstellar\cite{james_tunzelmann_franklin_thorne_2015}. However, almost all of these assume purely emissive light sources and very distant light sources that would be represented as environment maps.  In this paper, we present a ray tracer for a scene with a Schwarzchild black hole in diffuse lighting conditions.
 \end{abstract}
 
 
@@ -90,7 +90,7 @@ Einstein's field equations predict changes in the spacetime curvature in the vic
 
 \section{Photon Orbits in Schwarzchild Spacetime}
 
-Due to the spherical symmetry of the Schwarzchild spacetime, photon orbitals are confined to a plane.  The equations of motion are found by minimizing the action by means of Euler-Lagrange equations which yield[2]:
+Due to the spherical symmetry of the Schwarzchild spacetime, photon orbitals are confined to a plane.  The equations of motion are found by minimizing the action by means of Euler-Lagrange equations which yield\cite{drakos_moore}:
 
 \begin{displaymath}
   u" + u - \frac{3r_su^2}{2} = 0
@@ -100,7 +100,7 @@ $r_s$ being the Schwarzchild radius, a characteristic quantity of a black hole w
 
 \section{Ray Casting Algorithm}
 
-Our ray casting algorithm works by treating the geodesic paths as a piece wise connection of small linear rays. By numerically integrating the photon orbital equation, we get the next point on the geodesic, which gives us a ray defined by the line segment connecting the original point to the next point. Since we are building on top of our project 3 [3] and photon orbit equation is in terms of polar coordinates, we needed to convert between black hole polar coordinates and the world space.  The plane of the orbit is entirely determined by the black hole position, ray origin, and ray initial direction.  To form the black hole centered coordinates, define the unit vector pointing from the black hole to the ray origin as the x-axis and the orthogonal projection of the initial ray direction as the y-direction.  The initial conditions are given by:
+Our ray casting algorithm works by treating the geodesic paths as a piece wise connection of small linear rays. By numerically integrating the photon orbital equation, we get the next point on the geodesic, which gives us a ray defined by the line segment connecting the original point to the next point. Since we are building on top of our project 3\cite{ng_ragan-kelley} and photon orbit equation is in terms of polar coordinates, we needed to convert between black hole polar coordinates and the world space.  The plane of the orbit is entirely determined by the black hole position, ray origin, and ray initial direction.  To form the black hole centered coordinates, define the unit vector pointing from the black hole to the ray origin as the x-axis and the orthogonal projection of the initial ray direction as the y-direction.  The initial conditions are given by:
 
 \begin{displaymath}
   u(\theta = 0) = \frac{1}{r(\theta = 0)},
@@ -129,13 +129,13 @@ In our images, we find some notable features that have been reported in other bl
 
 \section{Gravitational Redshift}
 
-The distortion of spacetime induces changes in the local speed of light. Due to the wave nature of light, light spectra undergo a wavelength shift in a phenomenon known as gravitational redshift. Emission near the black hole becomes longer in wavelength as it moves away from the black hole and is described by the equation:
+The distortion of spacetime induces changes in the local speed of light. Due to the wave nature of light, light spectra undergo a wavelength shift in a phenomenon known as gravitational redshift. Emission near the black hole becomes longer in wavelength as it moves away from the black hole and is described by the equation\cite{wikipedia_2019}:
 
 \begin{displaymath}
   \frac{\lambda_1}{\lambda_2} = [(1 - r_s / R_1)(1 - r_s/R_2)]^{1/2}
 \end{displaymath}
 
-where $R_1, R2$ are the distances of the emitter and observer respectively relative to the black hole and $\lambda_1, \lambda_2$ are the emitted and observed wavelength respectively. In order to implement redshift, we took spectral data for the Cornell box and used spectral intensity values ranging from 400nm to 700nm with 4nm resolution[5].
+where $R_1, R2$ are the distances of the emitter and observer respectively relative to the black hole and $\lambda_1, \lambda_2$ are the emitted and observed wavelength respectively. In order to implement redshift, we took spectral data for the Cornell box and used spectral intensity values ranging from 400nm to 700nm with 4nm resolution\cite{cornell}.
 
 \begin{figure}[h]
   \centering
@@ -152,14 +152,8 @@ For our future goals, we would like to be able to implement a black hole with sp
 
 Special thanks to the Open Computing Facility (ocf.io) for letting us run our CPU intensive ray tracer. And Ren Ng for answering our questions regarding color spaces and where to find spectral data.
 
-\section{References}
-\begin{text}
-[1] Oliver James, Eugenie von Tunzelmann, Paul Franklin, Kip S Thorne. 2015. \italicized{Gravitational lensing by spinning black holes in astrophysics, and in the movie Interstellar.} Classical and Quantum Gravity, Vol. 32, Number 6. IOP Science.
-[2] https://hepweb.ucsd.edu/ph110b/110b_notes/node81.html
-[3] https://cs184.eecs.berkeley.edu/sp19/article/18/assignment-3-1-pathtracer
-[4] https://en.wikipedia.org/wiki/Gravitational_redshift 
-[5] https://www.graphics.cornell.edu/online/box/
-\end{text}
+\bibliographystyle{ACM-Reference-Format}
+\bibliography{paper}
 
 
 \end{document}
