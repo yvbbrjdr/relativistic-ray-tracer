@@ -26,10 +26,18 @@ namespace CGL {
 		double step_size = (max_wav - min_wav) / num_channels;
 		for (int i = 0; i < num_channels; i++) {
 			double lambda_i = min_wav + i * step_size;
-			for (int j = 0; j < num_channels; j++) {
-				double lambda_j = (min_wav + j * step_size) * s;
-				l.intensities[i] += intensities[j] * gaussian_pdf(lambda_i, lambda_j, step_size);
-			}
+			double lambda_j = lambda_i / s;
+			double j = (lambda_j - min_wav) / step_size;
+			int j0 = (int) floor(j);
+			int j1 = (int) ceil(j);
+			// if (j0 >= 0 && j0 < num_channels)
+			//  l.intensities[i] += intensities[j0] * gaussian_pdf(lambda_i, (j0 * step_size + min_wav) * s, step_size);
+		 	// if (j1 >= 0 && j1 < num_channels)
+ 			//  l.intensities[i] += intensities[j1] * gaussian_pdf(lambda_i, (j1 * step_size + min_wav) * s, step_size);
+			if (j0 >= 0 && j0 < num_channels)
+			 l.intensities[i] += intensities[j0] * (1 - (j - j0));
+		 	if (j1 >= 0 && j1 < num_channels)
+ 			 l.intensities[i] += intensities[j1] * (1 - (j1 - j));
 		}
 		return l;
 	}
@@ -68,27 +76,30 @@ namespace CGL {
 		// XYZ.x = 10.0 / xyz.y * xyz.x;
 		// XYZ.y = 10.0 / xyz.y;
 		// XYZ.z = 10.0 / xyz.y * (1 - xyz.x - xyz.y);
-		// cout << xyz << endl;
+		// cout << xyz << endl;j1 - j
 		return xyz;
 	}
 
 	Spectrum LightSpectrum::toRGB(void) {
 		/*
 		Returns native CGL, RGB Spectrum
+	double LightSpectrum::CIE_Z(double wavelen) { * (j1 - j);
+		double dParam1 = (wavelen-437.0)*((wavelen < 437.0)?0.0845:0.0278);
+		double dParam2 = (wa
 		*/
 		Matrix3x3 M_inv = Matrix3x3(
 			3.2404542, -1.5371385, -0.4985314,
 			-0.9692660, 1.8760108, 0.0415560,
 			0.0556434, -0.2040259, 1.0572252
 			);
-		Vector3D XYZ = toCIE_XYZ() * 1;
+		Vector3D XYZ = toCIE_XYZ() * 6e-3;
 		Vector3D RGB;
 		// cout << XYZ.y << endl;
 		RGB = M_inv * XYZ;
 		// cout << RGB << endl;
 		// return Spectrum(max(0.0, RGB[0]),
 		// 				max(0.0, RGB[1]),
-		// 				max(0.0, RGB[2]));
+		// 				max(0.0, RGB[2]));return
 		return Spectrum(min(1.0, max(0.0, RGB[0])),
 										min(1.0, max(0.0, RGB[1])),
 										min(1.0, max(0.0, RGB[2])));
