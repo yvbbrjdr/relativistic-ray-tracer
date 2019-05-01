@@ -56,6 +56,7 @@ PathTracer::PathTracer(size_t ns_aa,
   this->focalDistance = focalDistance;
   this->direct_hemisphere_sample = direct_hemisphere_sample;
   this->filename = filename;
+  this->render_silent = false;
 
   if (envmap) {
     this->envLight = new EnvironmentLight(envmap);
