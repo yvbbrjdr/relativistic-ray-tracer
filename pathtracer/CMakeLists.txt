@@ -63,8 +63,13 @@ if(LINUX)
 
   # GCC only
   if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
+  
+  set( CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/")  
 
-    set(GCC_CXX_FLAGS "-std=gnu++11 -no-pie -m64")
+  find_package( OpenCL REQUIRED )
+
+  include_directories( ${OPENCL_INCLUDE_DIR} )
+    set(GCC_CXX_FLAGS "-std=gnu++11 -no-pie -m64 -lOpenCL")
 
     # Debug configuration
     if(BUILD_DEBUG)
