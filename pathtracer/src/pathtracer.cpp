@@ -8,6 +8,7 @@
 #include <random>
 #include <algorithm>
 #include <sstream>
+#include <fstream>
 
 #include "CGL/CGL.h"
 #include "CGL/vector3D.h"
@@ -21,11 +22,137 @@
 #include "static_scene/light.h"
 #include "static_scene/blackhole.h"
 
+#ifdef __APPLE__
+#include <OpenCL/opencl.h>
+#else
+#define __CL_ENABLE_EXTENSIONS
+#include <CL/cl.hpp>
+#include <CL/opencl.h>
+#endif
+
 
 using namespace CGL::StaticScene;
-
 using std::min;
 using std::max;
+
+cl::Context context;
+cl::CommandQueue queue;
+cl::Program program;
+cl::Kernel kernel;
+
+void pickPlatform(cl::Platform& platform, const vector<cl::Platform>& platforms){
+
+	if (platforms.size() == 1) platform = platforms[0];
+	else{
+		int input = 0;
+		cout << "\nChoose an OpenCL platform: ";
+		cin >> input;
+
+		// handle incorrect user input
+		while (input < 1 || input > platforms.size()){
+			cin.clear(); //clear errors/bad flags on cin
+			cin.ignore(cin.rdbuf()->in_avail(), '\n'); // ignores exact number of chars in cin buffer
+			cout << "No such option. Choose an OpenCL platform: ";
+			cin >> input;
+		}
+		platform = platforms[input - 1];
+	}
+}
+
+void pickDevice(cl::Device& device, const vector<cl::Device>& devices){
+
+	if (devices.size() == 1) device = devices[0];
+	else{
+		int input = 0;
+		cout << "\nChoose an OpenCL device: ";
+		cin >> input;
+
+		// handle incorrect user input
+		while (input < 1 || input > devices.size()){
+			cin.clear(); //clear errors/bad flags on cin
+			cin.ignore(cin.rdbuf()->in_avail(), '\n'); // ignores exact number of chars in cin buffer
+			cout << "No such option. Choose an OpenCL device: ";
+			cin >> input;
+		}
+		device = devices[input - 1];
+	}
+}
+
+void printErrorLog(const cl::Program& program, const cl::Device& device){
+
+	// Get the error log and print to console
+	string buildlog = program.getBuildInfo<CL_PROGRAM_BUILD_LOG>(device);
+	cerr << "Build log:" << std::endl << buildlog << std::endl;
+
+	// Print the error log to a file
+	FILE *log = fopen("errorlog.txt", "w");
+	fprintf(log, "%s\n", buildlog);
+	cout << "Error log saved in 'errorlog.txt'" << endl;
+	system("PAUSE");
+	exit(1);
+}
+
+void initOpenCL()
+{
+	// Get all available OpenCL platforms (e.g. AMD OpenCL, Nvidia CUDA, Intel OpenCL)
+	vector<cl::Platform> platforms;
+  cl::Platform::get(&platforms);
+	cout << "Available OpenCL platforms : " << endl << endl;
+	for (int i = 0; i < platforms.size(); i++)
+		cout << "\t" << i + 1 << ": " << platforms[i].getInfo<CL_PLATFORM_NAME>() << endl;
+
+	// Pick one platform
+	cl::Platform platform;
+	pickPlatform(platform, platforms);
+	cout << "\nUsing OpenCL platform: \t" << platform.getInfo<CL_PLATFORM_NAME>() << endl;
+
+	// Get available OpenCL devices on platform
+	vector<cl::Device> devices;
+	platform.getDevices(CL_DEVICE_TYPE_ALL, &devices);
+
+	cout << "Available OpenCL devices on this platform: " << endl << endl;
+	for (int i = 0; i < devices.size(); i++){
+		cout << "\t" << i + 1 << ": " << devices[i].getInfo<CL_DEVICE_NAME>() << endl;
+		cout << "\t\tMax compute units: " << devices[i].getInfo<CL_DEVICE_MAX_COMPUTE_UNITS>() << endl;
+		cout << "\t\tMax work group size: " << devices[i].getInfo<CL_DEVICE_MAX_WORK_GROUP_SIZE>() << endl << endl;
+	}
+
+	// Pick one device
+	cl::Device device;
+	pickDevice(device, devices);
+	cout << "\nUsing OpenCL device: \t" << device.getInfo<CL_DEVICE_NAME>() << endl;
+	cout << "\t\t\tMax compute units: " << device.getInfo<CL_DEVICE_MAX_COMPUTE_UNITS>() << endl;
+	cout << "\t\t\tMax work group size: " << device.getInfo<CL_DEVICE_MAX_WORK_GROUP_SIZE>() << endl;
+
+	// Create an OpenCL context and command queue on that device.
+	context = cl::Context(device);
+	queue = cl::CommandQueue(context, device);
+
+	// Convert the OpenCL source code to a string
+	string source;
+	ifstream file("../src/kernels/raytrace.cl");
+	if (!file){
+		cout << "\nNo OpenCL file found!" << endl << "Exiting..." << endl;
+		system("PAUSE");
+		exit(1);
+	}
+	while (!file.eof()){
+		char line[256];
+		file.getline(line, 255);
+		source += line;
+	}
+
+	const char* kernel_source = source.c_str();
+
+	// Create an OpenCL program by performing runtime source compilation for the chosen device
+	program = cl::Program(context, kernel_source);
+	cl_int result = program.build({ device });
+	if (result) cout << "Error during compilation OpenCL code!!!\n (" << result << ")" << endl;
+	if (result == CL_BUILD_PROGRAM_FAILURE) printErrorLog(program, device);
+
+	// Create a kernel (entry point in the OpenCL source program)
+	kernel = cl::Kernel(program, "render_kernel");
+}
 
 namespace CGL {
 
@@ -231,6 +358,7 @@ void PathTracer::start_raytracing() {
 
   rayLog.clear();
   workQueue.clear();
+  initOpenCL();
 
   state = RENDERING;
   continueRaytracing = true;

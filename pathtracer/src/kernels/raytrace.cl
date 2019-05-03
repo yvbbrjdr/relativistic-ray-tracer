@@ -1,4 +1,4 @@
-#include "pathtracer.h"
+#include "../src/pathtracer.h"
 
 __kernel void raytrace_kernel(__global Spectrum* output, int width, int height, int x, int y) {
 

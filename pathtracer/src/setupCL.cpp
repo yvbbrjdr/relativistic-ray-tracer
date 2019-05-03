@@ -22,7 +22,7 @@ Program program;
 Buffer cl_output;
 
 void pickPlatform(Platform& platform, const vector<Platform>& platforms){
-	
+
 	if (platforms.size() == 1) platform = platforms[0];
 	else{
 		int input = 0;
@@ -41,7 +41,7 @@ void pickPlatform(Platform& platform, const vector<Platform>& platforms){
 }
 
 void pickDevice(Device& device, const vector<Device>& devices){
-	
+
 	if (devices.size() == 1) device = devices[0];
 	else{
 		int input = 0;
@@ -60,7 +60,7 @@ void pickDevice(Device& device, const vector<Device>& devices){
 }
 
 void printErrorLog(const Program& program, const Device& device){
-	
+
 	// Get the error log and print to console
 	string buildlog = program.getBuildInfo<CL_PROGRAM_BUILD_LOG>(device);
 	cerr << "Build log:" << std::endl << buildlog << std::endl;
@@ -84,7 +84,7 @@ void selectRenderMode(unsigned int& rendermode){
 
 	unsigned int input;
 	cout << endl << "Select rendermode (1-6): ";
-	cin >> input; 
+	cin >> input;
 
 	// handle incorrect user input
 	while (input < 1 || input > 6){
@@ -134,7 +134,7 @@ void initOpenCL()
 
 	// Convert the OpenCL source code to a string
 	string source;
-	ifstream file("opencl_kernel.cl");
+	ifstream file("raytrace.cl");
 	if (!file){
 		cout << "\nNo OpenCL file found!" << endl << "Exiting..." << endl;
 		system("PAUSE");

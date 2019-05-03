@@ -69,7 +69,7 @@ if(LINUX)
   find_package( OpenCL REQUIRED )
 
   include_directories( ${OPENCL_INCLUDE_DIR} )
-    set(GCC_CXX_FLAGS "-std=gnu++11 -no-pie -m64 -lOpenCL")
+  set(GCC_CXX_FLAGS "-std=gnu++11 -no-pie -m64 -lOpenCL -I../src")
 
     # Debug configuration
     if(BUILD_DEBUG)
