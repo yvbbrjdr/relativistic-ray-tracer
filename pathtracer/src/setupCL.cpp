@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <vector>
 #include <iostream>
+#include <fstream>
 #ifdef __APPLE__
 #include <OpenCL/opencl.h>
 #else
@@ -13,51 +14,106 @@
 using namespace std;
 using namespace cl;
 
-void pickPlatform(cl_platform_id& platform, const vector<cl_platform_id>& platforms) {
- 		
-		if (platforms.size() == 1){
-			cout << "only one platform" << endl;
-			platform = platforms[0];
-		}
-		else {
-			int input = 0;
-			cout << "\nChoose and OpenCL platform: ";
-			cin >> input;
+cl_context context;
+cl_command_queue queue;
+cl_program program;
+cl_int result;
+cl_kernel kernel;
 
-			while (input < 1 || input > platforms.size()) {
-				cin.clear();
-				cin.ignore(cin.rdbuf()->in_avail(), '\n');
-				cout << "no option, try again: ";
-				cin >> input;
-			}
-			platform = platforms[input - 1];
+void pickPlatform(cl_platform_id& platform, const vector<cl_platform_id>& platforms) {
+	char* buffer = (char *) malloc(100);
+	unsigned long int ret;
+	for (int i = 0; i < platforms.size(); i++) {
+		clGetPlatformInfo(platforms[i],
+				CL_PLATFORM_NAME,
+				100,
+				buffer,
+				&ret
+				);
+		cout << "available platforms:" << endl;
+		cout << i + 1 << ": \t" << buffer << endl;
+	}
+	if (platforms.size() == 1){
+		cout << "only one platform" << endl;
+		platform = platforms[0];
+	}
+	else {
+		int input = 0;
+		cout << "\nChoose and OpenCL platform: ";
+		cin >> input;
+
+		while (input < 1 || input > platforms.size()) {
+			cin.clear();
+			cin.ignore(cin.rdbuf()->in_avail(), '\n');
+			cout << "no option, try again: ";
+			cin >> input;
 		}
+		platform = platforms[input - 1];
+
+	}
+	free(buffer);
 }
 
-int main(void) {
-    // Create the two input vectors
-    int i, j;
-    cl_platform_id platform;
-    char* value;
-    long unsigned int valueSize;
-    cl_uint platformCount;
-    cl_platform_id* platforms;
-    cl_uint deviceCount;
-    cl_device_id* devices;
-    cl_uint maxComputeUnits;
+void pickDevice(cl_device_id& device, vector<cl_device_id>& devices) {
+	if (devices.size() == 1)
+	{
+		cout << "only one device" << endl;
+		device = devices[0];
+	} else
+	{
+		int i = 0;
+		cout << "\nChoose an OpenCL device: \t" << endl;
+		cin >> i;
+		while (i < 1 || i > devices.size()) {
+			cin.clear();
+			cin.ignore(cin.rdbuf()->in_avail(), '\n');
+			cout << "No option, try again: \t" << endl;
+			cin >> i;
+		}
+		device = devices[i - 1];
+	}
+	char* buffer = (char *) malloc(100);
+	unsigned long int ret;
+	clGetDeviceInfo(device, CL_DEVICE_NAME, 100, buffer, &ret);
+	cout << "Chose: \t" << buffer << endl;
+	free(buffer);
+}
 
-    clGetPlatformIDs(0, NULL, &platformCount);
-    platforms = (cl_platform_id*) malloc(sizeof(cl_platform_id) * platformCount);
-    int n = sizeof(platforms) / sizeof(platforms[0]);
-    clGetPlatformIDs(platformCount, platforms, NULL);
-		vector<cl_platform_id> dest(platforms, platforms + platformCount);
-		pickPlatform(platform, dest);
-    for (i = 0; i < platformCount; i++) {
+int initOpenCL(void) {
+	// Create the two input vectors
+	int i, j;
+	cl_platform_id platform;
+	cl_device_id device;
+	char* value;
+	long unsigned int valueSize;
+	cl_uint platformCount;
+	cl_platform_id* platforms;
+	cl_uint deviceCount;
+	cl_device_id* devices;
+	cl_uint maxComputeUnits;
 
-        // get all devices
-        clGetDeviceIDs(platforms[i], CL_DEVICE_TYPE_ALL, 0, NULL, &deviceCount);
+	clGetPlatformIDs(0, NULL, &platformCount);
+	platforms = (cl_platform_id*) malloc(sizeof(cl_platform_id) * platformCount);
+	int n = sizeof(platforms) / sizeof(platforms[0]);
+	clGetPlatformIDs(platformCount, platforms, NULL);
+	vector<cl_platform_id> dest(platforms, platforms + platformCount);
+	pickPlatform(platform, dest);
+	value = (char *) malloc(100);
+	clGetPlatformInfo(platform,
+				CL_PLATFORM_NAME,
+				100,
+				value,
+				&valueSize);
+	cout << "\nChose platform: \t" << value << endl;
+	free(value);
+    	clGetDeviceIDs(platform, CL_DEVICE_TYPE_ALL, 0, NULL, &deviceCount);
+    	devices = (cl_device_id*) malloc(sizeof(cl_device_id) * deviceCount);
+    	clGetDeviceIDs(platform, CL_DEVICE_TYPE_ALL, deviceCount, devices, NULL);
+    
+	// get all devices
+        clGetDeviceIDs(platform, CL_DEVICE_TYPE_ALL, 0, NULL, &deviceCount);
         devices = (cl_device_id*) malloc(sizeof(cl_device_id) * deviceCount);
-        clGetDeviceIDs(platforms[i], CL_DEVICE_TYPE_ALL, deviceCount, devices, NULL);
+        clGetDeviceIDs(platform, CL_DEVICE_TYPE_ALL, deviceCount, devices, NULL);
 
         // for each device print critical attributes
         for (j = 0; j < deviceCount; j++) {
@@ -96,11 +152,42 @@ int main(void) {
             printf(" %d.%d Parallel compute units: %d\n", j+1, 4, maxComputeUnits);
 
         }
+	vector<cl_device_id> device_ids(devices, devices + deviceCount);
+	pickDevice(device, device_ids);
+	context = clCreateContext(NULL, device_ids.size(), devices, NULL, NULL, NULL);
+	queue = clCreateCommandQueue(context, device, CL_QUEUE_OUT_OF_ORDER_EXEC_MODE_ENABLE, NULL);
+	
 
-        free(devices);
+	//Convert source code to a string
+	string source;
+	std::ifstream file;
+	file.open("pathracer.cpp");
+	if (!file.is_open())
+		{
+			cout << "\nNo OpenCL file found!" << endl << "Exiting..." << endl;
+			system("PAUSE");
+			exit(1);
+		}
+	while (!file.eof()) {
+		char line[256];
+		file.getline(line, 255);
+		source += line;
+	}
+	
+	const char* kernel_source = source.c_str();
 
-    }
+	//Create OpenCL program by performing runtime source compilation for chosen device
+	unsigned long int lengths[] = {source.length()};
+	program = clCreateProgramWithSource(context, 1, &kernel_source, lengths, NULL);
+	result = clBuildProgram(program, device_ids.size(), devices, NULL, NULL, NULL);
+	if (result) cout << "Erroro during compilation OpenCL code!!!\n" << result << ")" << endl;
+	kernel = clCreateKernel(program,
+ "pathtracer", NULL);
+	free(devices); 
+	free(platforms);
+	return 0;
+}
 
-    free(platforms);
-    return 0;
+int main(void) {
+	initOpenCL();
 }
