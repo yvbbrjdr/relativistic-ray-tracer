@@ -14,180 +14,157 @@
 using namespace std;
 using namespace cl;
 
-cl_context context;
-cl_command_queue queue;
-cl_program program;
-cl_int result;
-cl_kernel kernel;
+cl_float4* cpu_output;
+CommandQueue queue;
+Kernel kernel;
+Context context;
+Program program;
+Buffer cl_output;
 
-void pickPlatform(cl_platform_id& platform, const vector<cl_platform_id>& platforms) {
-	char* buffer = (char *) malloc(100);
-	unsigned long int ret;
-	for (int i = 0; i < platforms.size(); i++) {
-		clGetPlatformInfo(platforms[i],
-				CL_PLATFORM_NAME,
-				100,
-				buffer,
-				&ret
-				);
-		cout << "available platforms:" << endl;
-		cout << i + 1 << ": \t" << buffer << endl;
-	}
-	if (platforms.size() == 1){
-		cout << "only one platform" << endl;
-		platform = platforms[0];
-	}
-	else {
+void pickPlatform(Platform& platform, const vector<Platform>& platforms){
+	
+	if (platforms.size() == 1) platform = platforms[0];
+	else{
 		int input = 0;
-		cout << "\nChoose and OpenCL platform: ";
+		cout << "\nChoose an OpenCL platform: ";
 		cin >> input;
 
-		while (input < 1 || input > platforms.size()) {
-			cin.clear();
-			cin.ignore(cin.rdbuf()->in_avail(), '\n');
-			cout << "no option, try again: ";
+		// handle incorrect user input
+		while (input < 1 || input > platforms.size()){
+			cin.clear(); //clear errors/bad flags on cin
+			cin.ignore(cin.rdbuf()->in_avail(), '\n'); // ignores exact number of chars in cin buffer
+			cout << "No such option. Choose an OpenCL platform: ";
 			cin >> input;
 		}
 		platform = platforms[input - 1];
-
 	}
-	free(buffer);
 }
 
-void pickDevice(cl_device_id& device, vector<cl_device_id>& devices) {
-	if (devices.size() == 1)
-	{
-		cout << "only one device" << endl;
-		device = devices[0];
-	} else
-	{
-		int i = 0;
-		cout << "\nChoose an OpenCL device: \t" << endl;
-		cin >> i;
-		while (i < 1 || i > devices.size()) {
-			cin.clear();
-			cin.ignore(cin.rdbuf()->in_avail(), '\n');
-			cout << "No option, try again: \t" << endl;
-			cin >> i;
-		}
-		device = devices[i - 1];
-	}
-	char* buffer = (char *) malloc(100);
-	unsigned long int ret;
-	clGetDeviceInfo(device, CL_DEVICE_NAME, 100, buffer, &ret);
-	cout << "Chose: \t" << buffer << endl;
-	free(buffer);
-}
-
-int initOpenCL(void) {
-	// Create the two input vectors
-	int i, j;
-	cl_platform_id platform;
-	cl_device_id device;
-	char* value;
-	long unsigned int valueSize;
-	cl_uint platformCount;
-	cl_platform_id* platforms;
-	cl_uint deviceCount;
-	cl_device_id* devices;
-	cl_uint maxComputeUnits;
-
-	clGetPlatformIDs(0, NULL, &platformCount);
-	platforms = (cl_platform_id*) malloc(sizeof(cl_platform_id) * platformCount);
-	int n = sizeof(platforms) / sizeof(platforms[0]);
-	clGetPlatformIDs(platformCount, platforms, NULL);
-	vector<cl_platform_id> dest(platforms, platforms + platformCount);
-	pickPlatform(platform, dest);
-	value = (char *) malloc(100);
-	clGetPlatformInfo(platform,
-				CL_PLATFORM_NAME,
-				100,
-				value,
-				&valueSize);
-	cout << "\nChose platform: \t" << value << endl;
-	free(value);
-    	clGetDeviceIDs(platform, CL_DEVICE_TYPE_ALL, 0, NULL, &deviceCount);
-    	devices = (cl_device_id*) malloc(sizeof(cl_device_id) * deviceCount);
-    	clGetDeviceIDs(platform, CL_DEVICE_TYPE_ALL, deviceCount, devices, NULL);
-    
-	// get all devices
-        clGetDeviceIDs(platform, CL_DEVICE_TYPE_ALL, 0, NULL, &deviceCount);
-        devices = (cl_device_id*) malloc(sizeof(cl_device_id) * deviceCount);
-        clGetDeviceIDs(platform, CL_DEVICE_TYPE_ALL, deviceCount, devices, NULL);
-
-        // for each device print critical attributes
-        for (j = 0; j < deviceCount; j++) {
-
-            // print device name
-            clGetDeviceInfo(devices[j], CL_DEVICE_NAME, 0, NULL, &valueSize);
-            value = (char*) malloc(valueSize);
-            clGetDeviceInfo(devices[j], CL_DEVICE_NAME, valueSize, value, NULL);
-            printf("%d. Device: %s\n", j+1, value);
-            free(value);
-
-            // print hardware device version
-            clGetDeviceInfo(devices[j], CL_DEVICE_VERSION, 0, NULL, &valueSize);
-            value = (char*) malloc(valueSize);
-            clGetDeviceInfo(devices[j], CL_DEVICE_VERSION, valueSize, value, NULL);
-            printf(" %d.%d Hardware version: %s\n", j+1, 1, value);
-            free(value);
-
-            // print software driver version
-            clGetDeviceInfo(devices[j], CL_DRIVER_VERSION, 0, NULL, &valueSize);
-            value = (char*) malloc(valueSize);
-            clGetDeviceInfo(devices[j], CL_DRIVER_VERSION, valueSize, value, NULL);
-            printf(" %d.%d Software version: %s\n", j+1, 2, value);
-            free(value);
-
-            // print c version supported by compiler for device
-            clGetDeviceInfo(devices[j], CL_DEVICE_OPENCL_C_VERSION, 0, NULL, &valueSize);
-            value = (char*) malloc(valueSize);
-            clGetDeviceInfo(devices[j], CL_DEVICE_OPENCL_C_VERSION, valueSize, value, NULL);
-            printf(" %d.%d OpenCL C version: %s\n", j+1, 3, value);
-            free(value);
-
-            // print parallel compute units
-            clGetDeviceInfo(devices[j], CL_DEVICE_MAX_COMPUTE_UNITS,
-                    sizeof(maxComputeUnits), &maxComputeUnits, NULL);
-            printf(" %d.%d Parallel compute units: %d\n", j+1, 4, maxComputeUnits);
-
-        }
-	vector<cl_device_id> device_ids(devices, devices + deviceCount);
-	pickDevice(device, device_ids);
-	context = clCreateContext(NULL, device_ids.size(), devices, NULL, NULL, NULL);
-	queue = clCreateCommandQueue(context, device, CL_QUEUE_OUT_OF_ORDER_EXEC_MODE_ENABLE, NULL);
+void pickDevice(Device& device, const vector<Device>& devices){
 	
+	if (devices.size() == 1) device = devices[0];
+	else{
+		int input = 0;
+		cout << "\nChoose an OpenCL device: ";
+		cin >> input;
 
-	//Convert source code to a string
-	string source;
-	std::ifstream file;
-	file.open("pathracer.cpp");
-	if (!file.is_open())
-		{
-			cout << "\nNo OpenCL file found!" << endl << "Exiting..." << endl;
-			system("PAUSE");
-			exit(1);
+		// handle incorrect user input
+		while (input < 1 || input > devices.size()){
+			cin.clear(); //clear errors/bad flags on cin
+			cin.ignore(cin.rdbuf()->in_avail(), '\n'); // ignores exact number of chars in cin buffer
+			cout << "No such option. Choose an OpenCL device: ";
+			cin >> input;
 		}
-	while (!file.eof()) {
+		device = devices[input - 1];
+	}
+}
+
+void printErrorLog(const Program& program, const Device& device){
+	
+	// Get the error log and print to console
+	string buildlog = program.getBuildInfo<CL_PROGRAM_BUILD_LOG>(device);
+	cerr << "Build log:" << std::endl << buildlog << std::endl;
+
+	// Print the error log to a file
+	FILE *log = fopen("errorlog.txt", "w");
+	fprintf(log, "%s\n", buildlog);
+	cout << "Error log saved in 'errorlog.txt'" << endl;
+	system("PAUSE");
+	exit(1);
+}
+
+void selectRenderMode(unsigned int& rendermode){
+	cout << endl << "Rendermodes: " << endl << endl;
+	cout << "\t(1) Simple gradient" << endl;
+	cout << "\t(2) Sphere with plain colour" << endl;
+	cout << "\t(3) Sphere with cosine weighted colour" << endl;
+	cout << "\t(4) Stripey sphere" << endl;
+	cout << "\t(5) Sphere with screen door effect" << endl;
+	cout << "\t(6) Sphere with normals" << endl;
+
+	unsigned int input;
+	cout << endl << "Select rendermode (1-6): ";
+	cin >> input; 
+
+	// handle incorrect user input
+	while (input < 1 || input > 6){
+		cin.clear(); //clear errors/bad flags on cin
+		cin.ignore(cin.rdbuf()->in_avail(), '\n'); // ignores exact number of chars in cin buffer
+		cout << "No such option. Select rendermode: ";
+		cin >> input;
+	}
+	rendermode = input;
+}
+
+void initOpenCL()
+{
+	// Get all available OpenCL platforms (e.g. AMD OpenCL, Nvidia CUDA, Intel OpenCL)
+	vector<Platform> platforms;
+	Platform::get(&platforms);
+	cout << "Available OpenCL platforms : " << endl << endl;
+	for (int i = 0; i < platforms.size(); i++)
+		cout << "\t" << i + 1 << ": " << platforms[i].getInfo<CL_PLATFORM_NAME>() << endl;
+
+	// Pick one platform
+	Platform platform;
+	pickPlatform(platform, platforms);
+	cout << "\nUsing OpenCL platform: \t" << platform.getInfo<CL_PLATFORM_NAME>() << endl;
+
+	// Get available OpenCL devices on platform
+	vector<Device> devices;
+	platform.getDevices(CL_DEVICE_TYPE_ALL, &devices);
+
+	cout << "Available OpenCL devices on this platform: " << endl << endl;
+	for (int i = 0; i < devices.size(); i++){
+		cout << "\t" << i + 1 << ": " << devices[i].getInfo<CL_DEVICE_NAME>() << endl;
+		cout << "\t\tMax compute units: " << devices[i].getInfo<CL_DEVICE_MAX_COMPUTE_UNITS>() << endl;
+		cout << "\t\tMax work group size: " << devices[i].getInfo<CL_DEVICE_MAX_WORK_GROUP_SIZE>() << endl << endl;
+	}
+
+	// Pick one device
+	Device device;
+	pickDevice(device, devices);
+	cout << "\nUsing OpenCL device: \t" << device.getInfo<CL_DEVICE_NAME>() << endl;
+	cout << "\t\t\tMax compute units: " << device.getInfo<CL_DEVICE_MAX_COMPUTE_UNITS>() << endl;
+	cout << "\t\t\tMax work group size: " << device.getInfo<CL_DEVICE_MAX_WORK_GROUP_SIZE>() << endl;
+
+	// Create an OpenCL context and command queue on that device.
+	context = Context(device);
+	queue = CommandQueue(context, device);
+
+	// Convert the OpenCL source code to a string
+	string source;
+	ifstream file("opencl_kernel.cl");
+	if (!file){
+		cout << "\nNo OpenCL file found!" << endl << "Exiting..." << endl;
+		system("PAUSE");
+		exit(1);
+	}
+	while (!file.eof()){
 		char line[256];
 		file.getline(line, 255);
 		source += line;
 	}
-	
+
 	const char* kernel_source = source.c_str();
 
-	//Create OpenCL program by performing runtime source compilation for chosen device
-	unsigned long int lengths[] = {source.length()};
-	program = clCreateProgramWithSource(context, 1, &kernel_source, lengths, NULL);
-	result = clBuildProgram(program, device_ids.size(), devices, NULL, NULL, NULL);
-	if (result) cout << "Erroro during compilation OpenCL code!!!\n" << result << ")" << endl;
-	kernel = clCreateKernel(program,
- "pathtracer", NULL);
-	free(devices); 
-	free(platforms);
-	return 0;
+	// Create an OpenCL program by performing runtime source compilation for the chosen device
+	program = Program(context, kernel_source);
+	cl_int result = program.build({ device });
+	if (result) cout << "Error during compilation OpenCL code!!!\n (" << result << ")" << endl;
+	if (result == CL_BUILD_PROGRAM_FAILURE) printErrorLog(program, device);
+
+	// Create a kernel (entry point in the OpenCL source program)
+	kernel = Kernel(program, "render_kernel");
 }
 
-int main(void) {
+void cleanUp(){
+	delete cpu_output;
+}
+
+int main(){
+
+	// initialise OpenCL
 	initOpenCL();
+	return 0;
 }
