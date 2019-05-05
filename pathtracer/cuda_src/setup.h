@@ -106,6 +106,7 @@ class CUDAPathTracer {
     void loadLights();
     void loadPrimitives();
     void loadParameters();
+    void createFrameBuffer();
     void toGPULight(SceneLight* light, GPULight * gpuLight);
   private:
     PathTracer* pathtracer;

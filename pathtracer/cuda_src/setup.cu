@@ -75,8 +75,27 @@ void CUDAPathTracer::init()
   loadCamera();
   loadPrimitives();
   loadLights();
+  createFrameBuffer();
   loadParameters();
   cudaDeviceSetLimit(cudaLimitStackSize, 1024 * 24);
+  cudaDeviceSynchronize();
+}
+
+void CUDAPathTracer::createFrameBuffer()
+{
+  cudaError_t err = cudaSuccess;
+
+  screenH = pathtracer->frameBuffer.h;
+  screenW = pathtracer->frameBuffer.w;
+
+  err = cudaMalloc((void**)&frameBuffer, 3 * screenW * screenH * sizeof(float));
+  cudaMemset(frameBuffer, 0, 3 * screenW * screenH * sizeof(float));
+
+  if (err != cudaSuccess)
+  {
+      fprintf(stderr, "Failed! (error code %s)!\n", cudaGetErrorString(err));
+      exit(EXIT_FAILURE);
+  }
 }
 
 void CUDAPathTracer::loadCamera()
@@ -111,6 +130,7 @@ void CUDAPathTracer::loadPrimitives()
 {
     vector<Primitive *>& primitives = pathtracer->primitives;
     int N = primitives.size();
+    primNum = N;
     int types[N];
     int bsdfs[N];
     float *positions = new float[9 * N];
@@ -373,33 +393,6 @@ void CUDAPathTracer::loadLights() {
       exit(EXIT_FAILURE);
   }
 }
-
-__global__ void
-printInfo()
-{
-    for (int i = 0; i < 8; i++) {
-        if (const_bsdfs[i].type == 0) {
-            printf("0: %lf %lf %lf\n", const_bsdfs[i].albedo[0], const_bsdfs[i].albedo[1], const_bsdfs[i].albedo[2] );
-        }
-        else if (const_bsdfs[i].type == 1) {
-            printf("1: %lf %lf %lf\n", const_bsdfs[i].reflectance[0], const_bsdfs[i].reflectance[1], const_bsdfs[i].reflectance[2] );
-        }
-        else if (const_bsdfs[i].type == 2) {
-            //cout << "2" << endl;
-        }
-        else if (const_bsdfs[i].type == 3) {
-            printf("3: %lf %lf %lf\n", const_bsdfs[i].reflectance[0], const_bsdfs[i].reflectance[1], const_bsdfs[i].reflectance[2] );
-            printf("3: %lf %lf %lf\n", const_bsdfs[i].transmittance[0], const_bsdfs[i].transmittance[1], const_bsdfs[i].transmittance[2] );
-        }
-        else {
-            printf("4: %lf %lf %lf\n", const_bsdfs[i].albedo[0], const_bsdfs[i].albedo[1], const_bsdfs[i].albedo[2] );
-        }
-    }
-
-
-     printf("%lf %lf %lf\n", const_camera.pos[0], const_camera.pos[1], const_camera.pos[2] );
-
- }
 
 extern __global__ void vectorAdd(float *A, float *B, float *C, int numElements);
 
