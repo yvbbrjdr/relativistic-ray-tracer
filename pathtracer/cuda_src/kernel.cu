@@ -22,26 +22,12 @@
 // For the CUDA runtime routines (prefixed with "cuda_")
 #include <cuda_runtime.h>
 
-extern __global__ void add(int a, int b, int *c)
+extern __global__ void VectorAdd(float *A, float *B, float *C, int numElements)
 {
-	*c = a + b;
-	*c = 7;
-}
+	int i = blockDim.x * blockIdx.x + threadIdx.x;
 
-int test(){
-    int a, b, c;
-    int *dev_c;
-
-    a = 3;
-    b = 4;
-    cudaMalloc((void **)&dev_c, sizeof(int));
-    add<<<1, 1>>>(a, b, dev_c);
-    cudaMemcpy(&c, dev_c, sizeof(int), cudaMemcpyDeviceToHost);
-    printf("%d + %d is %d\n", a, b, c);
-    cudaFree(dev_c);
-    return 0;
-}
-
-int main() {
-	return test();
+	if (i < numElements)
+	{
+		gpuAdd(A + i, B + i, C + i);
+	}
 }

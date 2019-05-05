@@ -31,6 +31,9 @@
 #include "pathtracer.h"
 #include "image.h"
 
+// CUDAPathTracer
+#include "../cuda_src/setup.h"
+
 // Shared modules
 #include "camera.h"
 
@@ -104,9 +107,10 @@ class Application : public Renderer {
   void keyboard_event( int key, int event, unsigned char mods  );
 
   void load(Collada::SceneInfo* sceneInfo);
-  void render_to_file(std::string filename, size_t x, size_t y, size_t dx, size_t dy) { 
+  void transferToGPU();
+  void render_to_file(std::string filename, size_t x, size_t y, size_t dx, size_t dy) {
     set_up_pathtracer();
-    pathtracer->render_to_file(filename, x, y, dx, dy); 
+    pathtracer->render_to_file(filename, x, y, dx, dy);
   }
 
   void load_camera(std::string filename) {
@@ -127,7 +131,7 @@ class Application : public Renderer {
 
   DynamicScene::Scene *scene;
   PathTracer* pathtracer;
-
+  CUDAPathTracer* cuPathTracer;
   // View Frustrum Variables.
   // On resize, the aspect ratio is changed. On reset_camera, the position and
   // orientation are reset but NOT the aspect ratio.

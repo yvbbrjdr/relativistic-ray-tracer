@@ -10,7 +10,7 @@ list(APPEND CUDA_NVCC_FLAGS "-std=c++11 -O3")
 SET(CUDA_PROPAGATE_HOST_FLAGS OFF)
 
 file(GLOB GPUSRC
-	"kernel.cu"
+	"setup.cu"
 )
 
 CUDA_ADD_LIBRARY(

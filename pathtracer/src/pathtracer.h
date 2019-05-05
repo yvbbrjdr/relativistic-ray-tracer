@@ -166,8 +166,6 @@ class PathTracer {
   Vector2D cell_tl, cell_br;
   bool render_cell;
 
- private:
-
   /**
    * Used in initialization.
    */
@@ -225,6 +223,8 @@ class PathTracer {
    * Log a ray hit.
    */
   void log_ray_hit(const Ray& r, double hit_t);
+
+  void transferToGPU();
 
   enum State {
     INIT,               ///< to be initialized

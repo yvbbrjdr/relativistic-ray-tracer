@@ -106,7 +106,7 @@ class BSDF {
    * Refraction helper
    */
   virtual bool refract(const Vector3D& wo, Vector3D* wi, float ior);
-
+  virtual int getType() = 0;
   const HDRImageBuffer* reflectanceMap;
   const HDRImageBuffer* normalMap;
 
@@ -124,6 +124,7 @@ class DiffuseBSDF : public BSDF {
   Spectrum sample_f(const Vector3D& wo, Vector3D* wi, float* pdf);
   Spectrum get_emission() const { return Spectrum(); }
   bool is_delta() const { return false; }
+  int getType() {return 0;}
 
 private:
 
@@ -144,6 +145,7 @@ class MirrorBSDF : public BSDF {
   Spectrum sample_f(const Vector3D& wo, Vector3D* wi, float* pdf);
   Spectrum get_emission() const { return Spectrum(); }
   bool is_delta() const { return true; }
+  int getType() {return 1;}
 
 private:
 
@@ -182,6 +184,7 @@ class MicrofacetBSDF : public BSDF {
   Spectrum sample_f(const Vector3D& wo, Vector3D* wi, float* pdf);
   Spectrum get_emission() const { return Spectrum(); }
   bool is_delta() const { return false; }
+  int getType() {return 2;}
 
 private:
   Spectrum eta, k;
@@ -203,6 +206,7 @@ class RefractionBSDF : public BSDF {
   Spectrum sample_f(const Vector3D& wo, Vector3D* wi, float* pdf);
   Spectrum get_emission() const { return Spectrum(); }
   bool is_delta() const { return true; }
+  int getType() {return 3;}
 
  private:
 
@@ -227,6 +231,7 @@ class GlassBSDF : public BSDF {
   Spectrum sample_f(const Vector3D& wo, Vector3D* wi, float* pdf);
   Spectrum get_emission() const { return Spectrum(); }
   bool is_delta() const { return true; }
+  int getType() {return 4;}
 
  private:
 
@@ -249,6 +254,7 @@ class EmissionBSDF : public BSDF {
   Spectrum sample_f(const Vector3D& wo, Vector3D* wi, float* pdf);
   Spectrum get_emission() const { return radiance; }
   bool is_delta() const { return false; }
+  int getType() {return 5;}
 
  private:
 

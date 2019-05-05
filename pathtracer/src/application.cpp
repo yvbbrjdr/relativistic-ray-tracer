@@ -36,13 +36,13 @@ Application::Application(AppConfig config, bool gl) {
     config.pathtracer_lensRadius,
     config.pathtracer_focalDistance
   );
+  cuPathTracer = new CUDAPathTracer(pathtracer);
   filename = config.pathtracer_filename;
 }
 
 Application::~Application() {
-
+  delete cuPathTracer;
   delete pathtracer;
-
 }
 
 void Application::init() {
@@ -214,6 +214,11 @@ string Application::info() {
       return "PathTracer";
       break;
   }
+}
+
+void Application::transferToGPU() {
+  set_up_pathtracer();
+  cuPathTracer->init();
 }
 
 void Application::load(SceneInfo* sceneInfo) {
@@ -442,7 +447,7 @@ void Application::keyboard_event(int key, int event, unsigned char mods) {
             break;
 
           case 'F': case 'A':
-          case 'C': 
+          case 'C':
             pathtracer->key_press(key);
             break;
 

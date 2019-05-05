@@ -93,7 +93,6 @@ class Camera {
   double lensRadius;
   double focalDistance;
 
- protected:
   // Computes pos, screenXDir, screenYDir from target, r, phi, theta.
   void compute_position();
 

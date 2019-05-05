@@ -136,7 +136,7 @@ class BVHAccel : public Aggregate {
    */
   void drawOutline(const Color& c, float alpha) const { }
   void drawOutline(BVHNode *node, const Color& c, float alpha) const;
-
+  int getType() {return 3;}
   mutable unsigned long long total_rays, total_isects;
  private:
   BVHNode* root; ///< root node of the BVH

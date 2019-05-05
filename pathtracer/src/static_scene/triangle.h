@@ -56,8 +56,8 @@ namespace CGL { namespace StaticScene {
 
   /**
    * Get BSDF.
-   * In the case of a triangle, the surface material BSDF is stored in 
-   * the mesh it belongs to. 
+   * In the case of a triangle, the surface material BSDF is stored in
+   * the mesh it belongs to.
    */
   BSDF* get_bsdf() const { return mesh->get_bsdf(); }
 
@@ -70,6 +70,7 @@ namespace CGL { namespace StaticScene {
    * Draw outline with OpenGL (for visualizer)
    */
   void drawOutline(const Color& c, float alpha) const;
+  int getType() {return 1;}
 
  private:
 

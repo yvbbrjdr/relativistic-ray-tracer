@@ -162,6 +162,10 @@ namespace CGL {
     return ret / i;
   }
 
+  void PathTracer::transferToGPU() {
+  
+  }
+
   // Diffuse BSDF //
 
   Spectrum DiffuseBSDF::f(const Vector3D& wo, const Vector3D& wi) {

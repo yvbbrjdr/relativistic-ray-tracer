@@ -36,6 +36,7 @@ class EnvironmentLight : public SceneLight {
   Spectrum sample_L(const Vector3D& p, Vector3D* wi, float* distToLight,
                     float* pdf) const;
   bool is_delta_light() const { return false; }
+  int getType() {return 1;}
   /**
    * Returns the color found on the environment map by travelling in a specific
    * direction. This entails:

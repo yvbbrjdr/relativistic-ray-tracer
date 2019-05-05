@@ -61,6 +61,7 @@ class Primitive {
    * \param c desired highlight color
    */
   virtual void drawOutline(const Color& c, float alpha) const = 0;
+  virtual int getType() = 0;
 
 };
 

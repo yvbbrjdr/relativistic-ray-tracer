@@ -20,6 +20,7 @@ class DirectionalLight : public SceneLight {
   Spectrum sample_L(const Vector3D& p, Vector3D* wi, float* distToLight,
                     float* pdf) const;
   bool is_delta_light() const { return true; }
+  int getType() {return 0;}
 
  private:
   Spectrum radiance;
@@ -35,6 +36,7 @@ class InfiniteHemisphereLight : public SceneLight {
   Spectrum sample_L(const Vector3D& p, Vector3D* wi, float* distToLight,
                     float* pdf) const;
   bool is_delta_light() const { return false; }
+  int getType() {return 1;}
 
  private:
   Spectrum radiance;
@@ -47,27 +49,29 @@ class InfiniteHemisphereLight : public SceneLight {
 // Point Light //
 
 class PointLight : public SceneLight {
- public: 
+ public:
   PointLight(const Spectrum& rad, const Vector3D& pos);
   Spectrum sample_L(const Vector3D& p, Vector3D* wi, float* distToLight,
                     float* pdf) const;
   bool is_delta_light() const { return true; }
+  int getType () {return 2;}
 
  private:
   Spectrum radiance;
   Vector3D position;
-  
+
 }; // class PointLight
 
 // Spot Light //
 
 class SpotLight : public SceneLight {
  public:
-  SpotLight(const Spectrum& rad, const Vector3D& pos, 
+  SpotLight(const Spectrum& rad, const Vector3D& pos,
             const Vector3D& dir, float angle);
   Spectrum sample_L(const Vector3D& p, Vector3D* wi, float* distToLight,
                     float* pdf) const;
   bool is_delta_light() const { return true; }
+  int getType() {return -1;}
 
  private:
   Spectrum radiance;
@@ -81,12 +85,13 @@ class SpotLight : public SceneLight {
 
 class AreaLight : public SceneLight {
  public:
-  AreaLight(const Spectrum& rad, 
-            const Vector3D& pos,   const Vector3D& dir, 
+  AreaLight(const Spectrum& rad,
+            const Vector3D& pos,   const Vector3D& dir,
             const Vector3D& dim_x, const Vector3D& dim_y);
   Spectrum sample_L(const Vector3D& p, Vector3D* wi, float* distToLight,
                     float* pdf) const;
   bool is_delta_light() const { return false; }
+  int getType() {return 3;}
 
  private:
   Spectrum radiance;
@@ -107,6 +112,7 @@ class SphereLight : public SceneLight {
   Spectrum sample_L(const Vector3D& p, Vector3D* wi, float* distToLight,
                     float* pdf) const;
   bool is_delta_light() const { return false; }
+  int getType() {return -1;}
 
  private:
   const SphereObject* sphere;
@@ -123,6 +129,7 @@ class MeshLight : public SceneLight {
   Spectrum sample_L(const Vector3D& p, Vector3D* wi, float* distToLight,
                     float* pdf) const;
   bool is_delta_light() const { return false; }
+  int getType() {return -1;}
 
  private:
   const Mesh* mesh;
