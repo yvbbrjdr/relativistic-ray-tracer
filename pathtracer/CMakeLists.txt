@@ -132,6 +132,7 @@ include_directories(CGL/include)
 #-------------------------------------------------------------------------------
 # Add subdirectories
 #-------------------------------------------------------------------------------
+add_subdirectory(cuda_src)
 add_subdirectory(src)
 
 # build documentation

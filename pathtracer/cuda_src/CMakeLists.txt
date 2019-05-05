@@ -1,0 +1,19 @@
+cmake_minimum_required(VERSION 2.8)
+
+project(GPUAccel)
+
+find_package(CUDA QUIET REQUIRED)
+
+# ASSUMES DEBIAN OCF DISTRO, IDK FOR MAC OR WINDOWS
+
+list(APPEND CUDA_NVCC_FLAGS "-std=c++11 -O3")
+LIST(APPEND CUDA_NVCC_FLAGS -gencode arch=compute_30,code=sm_30)
+SET(CUDA_PROPAGATE_HOST_FLAGS OFF)
+
+file(GLOB GPUSRC
+	"kernel.cu"
+)
+
+CUDA_ADD_LIBRARY(
+	GPUAccel SHARED
+	${GPUSRC})
