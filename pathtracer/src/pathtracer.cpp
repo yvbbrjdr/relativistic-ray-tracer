@@ -314,7 +314,7 @@ void PathTracer::build_accel() {
   }
   timer.stop();
   fprintf(stdout, "Done! (%.4f sec)\n", timer.duration());
-
+  this->primitives = primitives;
   // build BVH //
   fprintf(stdout, "[PathTracer] Building BVH from %lu primitives... ", primitives.size());
   fflush(stdout);

@@ -1,33 +1,20 @@
-/**
- * Copyright 1993-2015 NVIDIA Corporation.  All rights reserved.
- *
- * Please refer to the NVIDIA end user license agreement (EULA) associated
- * with this source code for terms and conditions that govern your use of
- * this software. Any use, reproduction, disclosure, or distribution of
- * this software and related documentation outside the terms of the EULA
- * is strictly prohibited.
- *
- */
-
-/**
- * Vector addition: C = A + B.
- *
- * This sample is a very basic sample that implements element by element
- * vector addition. It is the same as the sample illustrating Chapter 2
- * of the programming guide with some additions like error checking.
- */
-
 #include <stdio.h>
 
-// For the CUDA runtime routines (prefixed with "cuda_")
-#include <cuda_runtime.h>
+#define MAX_NUM_LIGHT 20
+#define MAX_NUM_BSDF 20
 
-extern __global__ void VectorAdd(float *A, float *B, float *C, int numElements)
-{
-	int i = blockDim.x * blockIdx.x + threadIdx.x;
+#define RUSSIAN_ROULETTE
+#define SHADOW_RAY
 
-	if (i < numElements)
-	{
-		gpuAdd(A + i, B + i, C + i);
-	}
-}
+#define INF_FLOAT 1e20
+#define ESP_N 5e-3
+#define EPS_K 1e-4
+
+#define BLOCK_DIM 64
+#define LEAF_NUMBER 4
+
+__constant__  GPUCamera const_camera;
+__constant__  GPUBSDF const_bsdfs[MAX_NUM_BSDF];
+__constant__  GPULight const_lights[MAX_NUM_LIGHT];
+__constant__  Parameters const_params;
+__constant__  BVHParameters const_bvhparams;

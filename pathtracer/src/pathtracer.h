@@ -30,6 +30,8 @@ using CGL::StaticScene::Scene;
 #include "static_scene/environment_light.h"
 using CGL::StaticScene::EnvironmentLight;
 
+using CGL::StaticScene::Primitive;
+
 using CGL::StaticScene::BVHNode;
 using CGL::StaticScene::BVHAccel;
 
@@ -260,7 +262,7 @@ class PathTracer {
   size_t num_tiles_h;       ///< number of tiles along height of the image
 
   // Components //
-
+  std::vector<Primitive *> primitives;
   BVHAccel* bvh;                 ///< BVH accelerator aggregate
   EnvironmentLight *envLight;    ///< environment map
   Sampler2D* gridSampler;        ///< samples unit grid

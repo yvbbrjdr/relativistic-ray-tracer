@@ -126,7 +126,6 @@ class DiffuseBSDF : public BSDF {
   bool is_delta() const { return false; }
   int getType() {return 0;}
 
-private:
 
   Spectrum reflectance;
   CosineWeightedHemisphereSampler3D sampler;
@@ -146,8 +145,6 @@ class MirrorBSDF : public BSDF {
   Spectrum get_emission() const { return Spectrum(); }
   bool is_delta() const { return true; }
   int getType() {return 1;}
-
-private:
 
   float roughness;
   Spectrum reflectance;
@@ -186,7 +183,6 @@ class MicrofacetBSDF : public BSDF {
   bool is_delta() const { return false; }
   int getType() {return 2;}
 
-private:
   Spectrum eta, k;
   float alpha;
   UniformGridSampler2D sampler;
@@ -207,8 +203,6 @@ class RefractionBSDF : public BSDF {
   Spectrum get_emission() const { return Spectrum(); }
   bool is_delta() const { return true; }
   int getType() {return 3;}
-
- private:
 
   float ior;
   float roughness;
@@ -233,8 +227,6 @@ class GlassBSDF : public BSDF {
   bool is_delta() const { return true; }
   int getType() {return 4;}
 
- private:
-
   float ior;
   float roughness;
   Spectrum reflectance;
@@ -255,8 +247,6 @@ class EmissionBSDF : public BSDF {
   Spectrum get_emission() const { return radiance; }
   bool is_delta() const { return false; }
   int getType() {return 5;}
-
- private:
 
   Spectrum radiance;
   CosineWeightedHemisphereSampler3D sampler;

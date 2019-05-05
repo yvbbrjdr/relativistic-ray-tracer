@@ -22,7 +22,6 @@ class DirectionalLight : public SceneLight {
   bool is_delta_light() const { return true; }
   int getType() {return 0;}
 
- private:
   Spectrum radiance;
   Vector3D dirToLight;
 
@@ -38,7 +37,6 @@ class InfiniteHemisphereLight : public SceneLight {
   bool is_delta_light() const { return false; }
   int getType() {return 1;}
 
- private:
   Spectrum radiance;
   Matrix3x3 sampleToWorld;
   UniformHemisphereSampler3D sampler;
@@ -56,7 +54,7 @@ class PointLight : public SceneLight {
   bool is_delta_light() const { return true; }
   int getType () {return 2;}
 
- private:
+
   Spectrum radiance;
   Vector3D position;
 
@@ -73,7 +71,7 @@ class SpotLight : public SceneLight {
   bool is_delta_light() const { return true; }
   int getType() {return -1;}
 
- private:
+
   Spectrum radiance;
   Vector3D position;
   Vector3D direction;
@@ -93,7 +91,7 @@ class AreaLight : public SceneLight {
   bool is_delta_light() const { return false; }
   int getType() {return 3;}
 
- private:
+
   Spectrum radiance;
   Vector3D position;
   Vector3D direction;
@@ -114,7 +112,7 @@ class SphereLight : public SceneLight {
   bool is_delta_light() const { return false; }
   int getType() {return -1;}
 
- private:
+
   const SphereObject* sphere;
   Spectrum radiance;
   UniformHemisphereSampler3D sampler;
@@ -131,7 +129,7 @@ class MeshLight : public SceneLight {
   bool is_delta_light() const { return false; }
   int getType() {return -1;}
 
- private:
+ 
   const Mesh* mesh;
   Spectrum radiance;
 

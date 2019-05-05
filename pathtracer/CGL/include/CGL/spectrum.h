@@ -36,6 +36,14 @@ class Spectrum {
 
   // operators //
 
+  inline float& operator[] (const int& index) {
+    return ( &r )[ index ];
+  }
+
+  inline const float& operator[] ( const int& index ) const {
+    return ( &r )[ index ];
+  }
+
   inline Spectrum operator+(const Spectrum &rhs) const {
     return Spectrum(r + rhs.r, g + rhs.g, b + rhs.b);
   }
