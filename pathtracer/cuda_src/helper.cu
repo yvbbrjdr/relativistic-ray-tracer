@@ -2,7 +2,40 @@
 #include <math.h>
 // For the CUDA runtime routines (prefixed with "cuda_")
 #include <cuda_runtime.h>
+#include <curand_kernel.h>
+
 #define Pi 3.1415926
+
+__device__ float2 gridSampler(curandState *s) {
+    float2 rt;
+    rt.x = curand_uniform(s);
+    rt.y = curand_uniform(s);
+    return rt;
+}
+
+__device__ inline void
+scaleVector3D(float* X, float a)
+{
+    X[0] *= a;
+    X[1] *= a;
+    X[2] *= a;
+}
+
+// S = X + a * Y
+__device__ inline void
+addScaledVector3D(float* X, float* Y, float a, float* S)
+{
+    S[0] = X[0] + Y[0] * a;
+    S[1] = X[1] + Y[1] * a;
+    S[2] = X[2] + Y[2] * a;
+}
+
+__device__ inline void
+readVector3D(float x, float y, float z, float *dst) {
+    dst[0] = x;
+    dst[1] = y;
+    dst[2] = z;
+}
 
 __device__ inline float
 power(float X,float Y)
@@ -32,7 +65,7 @@ normalize3D(float *X)
 }
 
 __device__ inline void
-initVector3D(float x, float y, float z, float* S)
+initVector3D(const float x, const float y, const float z, float* S)
 {
     S[0] = x;
     S[1] = y;
@@ -62,14 +95,14 @@ subVector3D(const float *X, const float *Y, float *S) {
 }
 
 __device__ inline void
-readVector3D(float* src, float* dst) {
+readVector3D(const float* src, float* dst) {
     dst[0] = src[0];
     dst[1] = src[1];
     dst[2] = src[2];
 }
 
 __device__ inline void
-readVector3D(float3 src, float *dst) {
+readVector3D(const float3 src, float *dst) {
     dst[0] = src.x;
     dst[1] = src.y;
     dst[2] = src.z;
@@ -204,7 +237,40 @@ void MatrixScale3D(float* X,float a)
     }
 }
 
+inline __device__
+void MatrixTranspose3D(float* X,float* S)
+{
+    for(int k = 0; k < 9; k++)
+    {
+        S[(k % 3) * 3 + k / 3] = X[k];
+    }
+}
 
+inline __device__
+void make_coord_space(const float* n, float* o2w) {
+
+    float z[3];
+    float h[3];
+    float x[3];
+    float y[3];
+
+    readVector3D(n, (float *) z);
+    readVector3D(z, (float *) h);
+
+    if (fabs(h[0]) <= fabs(h[1]) && fabs(h[0]) <= fabs(h[2])) h[0] = 1.0;
+    else if (fabs(h[1]) <= fabs(h[0]) && fabs(h[1]) <= fabs(h[2])) h[1] = 1.0;
+    else h[2] = 1.0;
+
+    normalize3D(z);
+    VectorCross3D(h, z, y);
+    normalize3D(y);
+    VectorCross3D(z, y, x);
+    normalize3D(x);
+
+    o2w[0] = x[0]; o2w[1] = y[0]; o2w[2] = z[0];
+    o2w[3] = x[1]; o2w[4] = y[1]; o2w[5] = z[1];
+    o2w[6] = x[2]; o2w[7] = y[2]; o2w[8] = z[2];
+}
 
 inline __device__ void
 gpuAdd(float *A, float *B, float *C)
