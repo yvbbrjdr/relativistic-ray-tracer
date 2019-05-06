@@ -23,11 +23,49 @@ norm3D(const float *X)
 }
 
 __device__ inline void
+normalize3D(float *X)
+{
+    double norm = sqrt(X[0]*X[0]+X[1]*X[1]+X[2]*X[2]);
+    X[0] /= norm;
+    X[1] /= norm;
+    X[2] /= norm;
+}
+
+__device__ inline void
 initVector3D(float x, float y, float z, float* S)
 {
     S[0] = x;
     S[1] = y;
     S[2] = z;
+}
+
+__device__ inline void
+VectorCross3D(const float *u, float *v, float *s) {
+    s[0] = u[1] * v[2] - u[2] * v[1];
+    s[1] = u[2] * v[0] - u[0] * v[2];
+    s[2] = u[0] * v[1] - u[1] * v[0];
+}
+
+
+__device__ inline void
+addVector3D(const float *X, const float *Y, float *S) {
+    S[0] = X[0] + Y[0];
+    S[1] = X[1] + Y[1];
+    S[2] = X[2] + Y[2];
+}
+
+ __device__ inline void
+subVector3D(const float *X, const float *Y, float *S) {
+    S[0] = X[0] - Y[0];
+    S[1] = X[1] - Y[1];
+    S[2] = X[2] - Y[2];
+}
+
+__device__ inline void
+readVector3D(float* src, float* dst) {
+    dst[0] = src[0];
+    dst[1] = src[1];
+    dst[2] = src[2];
 }
 
  __device__ inline void
