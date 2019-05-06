@@ -34,7 +34,10 @@ Application::Application(AppConfig config, bool gl) {
     config.pathtracer_direct_hemisphere_sample,
     config.pathtracer_filename,
     config.pathtracer_lensRadius,
-    config.pathtracer_focalDistance
+    config.pathtracer_focalDistance,
+    config.pathtracer_blackhole_xyz,
+    config.pathtracer_blackhole_r,
+    config.pathtracer_blackhole_delta
   );
   cuPathTracer = new CUDAPathTracer(pathtracer);
   filename = config.pathtracer_filename;

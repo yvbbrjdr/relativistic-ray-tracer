@@ -64,6 +64,10 @@ struct AppConfig {
     pathtracer_lensRadius = 0.25;
     pathtracer_focalDistance = 4.7;
 
+    pathtracer_blackhole_xyz = Vector3D(0, 1, 0);
+    pathtracer_blackhole_r = 0.1;
+    pathtracer_blackhole_delta = 0.1;
+
   }
 
   size_t pathtracer_ns_aa;
@@ -85,6 +89,10 @@ struct AppConfig {
   string pathtracer_filename;
   double pathtracer_lensRadius;
   double pathtracer_focalDistance;
+
+  Vector3D pathtracer_blackhole_xyz;
+  double pathtracer_blackhole_r;
+  double pathtracer_blackhole_delta;
 };
 
 class Application : public Renderer {

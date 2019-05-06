@@ -83,7 +83,10 @@ class PathTracer {
              bool direct_hemisphere_sample = false,
              string filename = "",
              double lensRadius = 0.25,
-             double focalDistance = 4.7);
+             double focalDistance = 4.7,
+             Vector3D blackhole_xyz = Vector3D(0, 1, 0),
+             double blackhole_r = 0.1,
+             double blackhole_delta = 0.1);
 
   /**
    * Destructor.
@@ -254,6 +257,9 @@ class PathTracer {
   size_t samplesPerBatch;
   float maxTolerance;
   bool direct_hemisphere_sample; ///< true if sampling uniformly from hemisphere for direct lighting. Otherwise, light sample
+  Vector3D blackhole_xyz;
+  double blackhole_r;
+  double blackhole_delta;
 
   // Integration state //
 

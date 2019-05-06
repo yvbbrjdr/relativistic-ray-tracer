@@ -146,6 +146,9 @@ int main( int argc, char** argv ) {
           CGL::StaticScene::global_black_hole.r = atof(argv[optind + 2]);
           CGL::StaticScene::global_black_hole.r2 = CGL::StaticScene::global_black_hole.r * CGL::StaticScene::global_black_hole.r;
           CGL::StaticScene::global_black_hole.delta_theta = atof(argv[optind + 3]);
+          config.pathtracer_blackhole_xyz = CGL::StaticScene::global_black_hole.o;
+          config.pathtracer_blackhole_r = CGL::StaticScene::global_black_hole.r;
+          config.pathtracer_blackhole_delta = CGL::StaticScene::global_black_hole.delta_theta;
           optind += 4;
           break;
       default:

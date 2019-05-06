@@ -25,6 +25,10 @@ struct Parameters
     float4* woopPositions;
     float3* camOffset;
 
+    float3 blackhole_xyz;
+    float blackhole_r;
+    float blackhole_delta;
+
     float* frameBuffer;
 
     int* BVHPrimMap;
@@ -334,6 +338,11 @@ void CUDAPathTracer::loadParameters() {
     tmpParams.ns_aa = pathtracer->ns_aa;
     tmpParams.ns_area_light = pathtracer->ns_area_light;
     tmpParams.lightNum = pathtracer->scene->lights.size();
+    tmpParams.blackhole_xyz.x = pathtracer->blackhole_xyz.x;
+    tmpParams.blackhole_xyz.y = pathtracer->blackhole_xyz.y;
+    tmpParams.blackhole_xyz.z = pathtracer->blackhole_xyz.z;
+    tmpParams.blackhole_r = pathtracer->blackhole_r;
+    tmpParams.blackhole_delta = pathtracer->blackhole_delta;
     tmpParams.types = gpu_types;
     tmpParams.bsdfIndexes = gpu_bsdfIndexes;
     tmpParams.positions = gpu_positions;

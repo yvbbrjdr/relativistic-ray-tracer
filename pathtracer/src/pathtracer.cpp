@@ -42,7 +42,11 @@ PathTracer::PathTracer(size_t ns_aa,
                        bool direct_hemisphere_sample,
                        string filename,
                        double lensRadius,
-                       double focalDistance){
+                       double focalDistance,
+                       Vector3D blackhole_xyz,
+                       double blackhole_r,
+                       double blackhole_delta
+                     ){
   state = INIT,
   this->ns_aa = ns_aa;
   this->max_ray_depth = max_ray_depth;
@@ -57,6 +61,9 @@ PathTracer::PathTracer(size_t ns_aa,
   this->direct_hemisphere_sample = direct_hemisphere_sample;
   this->filename = filename;
   this->render_silent = false;
+  this->blackhole_xyz = blackhole_xyz;
+  this->blackhole_r = blackhole_r;
+  this->blackhole_delta = blackhole_delta;
 
   if (envmap) {
     this->envLight = new EnvironmentLight(envmap);
