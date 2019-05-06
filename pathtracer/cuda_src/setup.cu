@@ -69,6 +69,17 @@ CUDAPathTracer::~CUDAPathTracer()
   cudaFree(BVHPrimMap);
 }
 
+void CUDAPathTracer::startRayTracing()
+{
+    int blockDim = 256;
+    int gridDim = (screenW * screenH + blockDim - 1) / blockDim;
+
+    traceScene<<<gridDim, blockDim>>>();
+    cudaThreadSynchronize();
+    cudaDeviceSynchronize();
+}
+
+
 void CUDAPathTracer::init()
 {
   cudaDeviceReset();

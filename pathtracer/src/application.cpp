@@ -485,8 +485,13 @@ void Application::keyboard_event(int key, int event, unsigned char mods) {
       if (event == EVENT_PRESS) {
         switch(key) {
           case 'r': case 'R':
-            set_up_pathtracer();
-            pathtracer->start_raytracing();
+            // set_up_pathtracer();
+            // pathtracer->start_raytracing();
+            pathtracer->state = PathTracer::RENDERING;
+            pathtracer->continueRaytracing = true;
+            pathtracer->sampleBuffer.clear();
+            pathtracer->frameBuffer.clear();
+            cuPathTracer->updateHostSampleBuffer();
             mode = RENDER_MODE;
             break;
           case 'v': case 'V':

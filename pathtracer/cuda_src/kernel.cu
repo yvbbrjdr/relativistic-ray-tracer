@@ -21,30 +21,56 @@ __constant__  GPULight const_lights[MAX_NUM_LIGHT];
 __constant__  Parameters const_params;
 __constant__  BVHParameters const_bvhparams;
 
+
+__device__ void
+generateRay(GPURay* ray, float x, float y)
+{
+    float sp[3];
+    sp[0] = -(x-0.5) * const_camera.widthDivDist;
+    sp[1] = -(y-0.5) * const_camera.heightDivDist;
+    sp[2] = 1;
+    float dir[3];
+    dir[0] = -sp[0];
+    dir[1] = -sp[1];
+    dir[2] = -sp[2];
+    float world_sp[3];
+    MatrixMulVector3D(const_camera.c2w, sp, world_sp);
+ }
+
+__device__ float3
+tracePixel(int x, int y)
+{
+   float3 s;
+
+   int w = const_params.screenW;
+   int h = const_params.screenH;
+
+   float px = x / (float)w;
+   float py = y / (float)h;
+
+   GPURay ray;
+   generateRay(&ray, px, py);
+}
+
 __global__ void
-tracePixel()
+traceScene()
 {
     int index = blockDim.x * blockIdx.x + threadIdx.x;
 
-     if (index >= const_params.screenW * const_params.screenH) {
+    if (index >= const_params.screenW * const_params.screenH) {
         return;
     }
+
+    int x = index % const_params.screenW;
+    int y = index / const_params.screenW;
+
+    tracePixel(x, y);
 
     const_params.frameBuffer[3 * index] = 1.0;
     const_params.frameBuffer[3 * index + 1] = 0.5;
     const_params.frameBuffer[3 * index + 2] = 0.5;
-    curandState s;
-    curand_init((unsigned int)index, 0, 0, &s);
 }
 
-void CUDAPathTracer::startRayTracing()
-{
-    int blockDim = 256;
-    int gridDim = (const_params.screenW * const_params.screenH + blockDim - 1) / blockDim;
-
-     tracePixel<<<gridDim, blockDim>>>();
-    cudaThreadSynchronize();
-}
 
 __device__ float2 gridSampler(curandState *s) {
     float2 rt;
