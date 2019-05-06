@@ -1,6 +1,5 @@
 #include <cuda_runtime.h>
 #include <iostream>
-#include "helper.cu"
 #include "setup.h"
 #include <map>
 
