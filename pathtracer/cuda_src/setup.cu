@@ -79,6 +79,7 @@ void CUDAPathTracer::init()
   loadParameters();
   cudaDeviceSetLimit(cudaLimitStackSize, 1024 * 24);
   cudaDeviceSynchronize();
+  startRayTracing();
 }
 
 void CUDAPathTracer::createFrameBuffer()
@@ -96,6 +97,38 @@ void CUDAPathTracer::createFrameBuffer()
       fprintf(stderr, "Failed! (error code %s)!\n", cudaGetErrorString(err));
       exit(EXIT_FAILURE);
   }
+}
+
+void CUDAPathTracer::updateHostSampleBuffer() {
+    float* gpuBuffer = (float*) malloc(sizeof(float) * (3 * screenW * screenH));
+    cudaError_t err = cudaSuccess;
+
+    err = cudaMemcpy(gpuBuffer, frameBuffer, sizeof(float) * (3 * screenW * screenH), cudaMemcpyDeviceToHost);
+
+    if (err != cudaSuccess)
+    {
+        fprintf(stderr, "Failed! (error code %s)!\n", cudaGetErrorString(err));
+        exit(EXIT_FAILURE);
+    }
+
+    pathtracer->updateBufferFromGPU(gpuBuffer);
+    free(gpuBuffer);
+}
+
+void PathTracer::updateBufferFromGPU(float* gpuBuffer) {
+    size_t w = sampleBuffer.w;
+    size_t h = sampleBuffer.h;
+    for (int x = 0; x < w; ++x)
+    {
+        for (int y = 0; y < h; ++y)
+        {
+            int index = 3 * (y * w + x);
+            Spectrum s(gpuBuffer[index], gpuBuffer[index + 1], gpuBuffer[index + 2]);
+            //cout << s.r << "," << s.g << "," << s.b << endl;
+            sampleBuffer.update_pixel(s, x, y);
+        }
+    }
+    sampleBuffer.toColor(frameBuffer, 0, 0, w, h);
 }
 
 void CUDAPathTracer::loadCamera()
@@ -394,10 +427,8 @@ void CUDAPathTracer::loadLights() {
   }
 }
 
-extern __global__ void vectorAdd(float *A, float *B, float *C, int numElements);
-
 extern void test() {
-  printf("hello\n");
+  printf("Hello");
 }
 
 int main() {

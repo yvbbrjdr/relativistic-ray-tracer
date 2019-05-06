@@ -92,6 +92,21 @@ PathTracer::~PathTracer() {
 
 }
 
+void PathTracer::updateBufferFromGPU(float* gpuBuffer) {
+  size_t w = sampleBuffer.w;
+  size_t h = sampleBuffer.h;
+  for (int x = 0; x < w; ++x)
+  {
+    for (int y = 0; y < h; ++y)
+    {
+      int index = 3 * (y * w + x);
+      Spectrum s(gpuBuffer[index], gpuBuffer[index + 1], gpuBuffer[index + 2]);
+      sampleBuffer.update_pixel(s, x, y);
+    }
+  }
+  sampleBuffer.toColor(frameBuffer, 0, 0, w, h);
+}
+
 void PathTracer::set_scene(Scene *scene) {
 
   if (state != INIT) {

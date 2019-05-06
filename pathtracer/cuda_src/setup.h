@@ -1,3 +1,5 @@
+#pragma once
+
 #include "../src/pathtracer.h"
 #include "../src/static_scene/light.h"
 #include "../src/static_scene/sphere.h"
@@ -107,6 +109,9 @@ class CUDAPathTracer {
     void loadPrimitives();
     void loadParameters();
     void createFrameBuffer();
+    void updateHostSampleBuffer();
+    void updateBufferFromGPU(float* gpuBuffer);
+    void startRayTracing();
     void toGPULight(SceneLight* light, GPULight * gpuLight);
   private:
     PathTracer* pathtracer;

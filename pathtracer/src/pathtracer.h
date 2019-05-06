@@ -90,6 +90,8 @@ class PathTracer {
    * Frees all the internal resources used by the pathtracer.
    */
   ~PathTracer();
+  void transferToGPU();
+  void updateBufferFromGPU(float* gpuBuffer);
 
   /**
    * If in the INIT state, configures the pathtracer to use the given scene. If
@@ -225,8 +227,6 @@ class PathTracer {
    * Log a ray hit.
    */
   void log_ray_hit(const Ray& r, double hit_t);
-
-  void transferToGPU();
 
   enum State {
     INIT,               ///< to be initialized
