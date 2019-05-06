@@ -74,6 +74,7 @@ struct GPULight
     float direction[3];
     float dim_x[3];
     float dim_y[3];
+    float sampleToWorld[9];
     float area;
     int type; //0 - directional, 1 - InfiniteHemisphereLight, 2-PointLight, 3-AreaLight
 };

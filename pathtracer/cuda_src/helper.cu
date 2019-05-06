@@ -68,6 +68,13 @@ readVector3D(float* src, float* dst) {
     dst[2] = src[2];
 }
 
+__device__ inline void
+readVector3D(float3 src, float *dst) {
+    dst[0] = src.x;
+    dst[1] = src.y;
+    dst[2] = src.z;
+}
+
  __device__ inline void
 negVector3D(const float *X,float* S)
 {
