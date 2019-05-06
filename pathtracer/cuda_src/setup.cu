@@ -75,10 +75,18 @@ CUDAPathTracer::~CUDAPathTracer()
 
 void CUDAPathTracer::startRayTracing()
 {
+    int xTileNum = 1;
+    int yTileNum = 1;
+    int width = (screenW + xTileNum - 1) / xTileNum;
+    int height = (screenH + yTileNum - 1) / yTileNum;
     int blockDim = 256;
-    int gridDim = (screenW * screenH + blockDim - 1) / blockDim;
+    int gridDim = (width * height + blockDim - 1) / blockDim;
 
-    traceScene<<<gridDim, blockDim>>>();
+    for(int i = 0; i < xTileNum; i++)
+        for(int j = 0; j < yTileNum; j++)
+        {
+            traceScene<<<gridDim, blockDim>>>(i * width, j * height, width, height);
+        }
     cudaThreadSynchronize();
     cudaDeviceSynchronize();
 }

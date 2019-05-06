@@ -54,7 +54,7 @@ __device__ float3 uniformHemisphereSampler(curandState *s) {
     double r1 = tmp.x;
     double r2 = tmp.y;
 
-     double sin_theta = sqrt(1 - r1 * r1);
+    double sin_theta = sqrt(1 - r1 * r1);
     double phi = 2 * PI * r2;
 
      float3 rt;
@@ -70,7 +70,7 @@ traceRay(curandState* s, GPURay* ray)
     GPUIntersection isect;
     isect.t = 1e10;
 
-     bool isIntersect = false;
+    bool isIntersect = false;
     for(int i = 0; i < const_params.primNum; i++)
     {
         isIntersect = intersect(i, *ray, &isect) || isIntersect;
@@ -117,19 +117,19 @@ tracePixel(curandState* s, int x, int y)
 }
 
 __global__ void
-traceScene()
+traceScene(int xStart, int yStart, int width, int height)
 {
-    int index = blockDim.x * blockIdx.x + threadIdx.x;
+    int tIndex = blockDim.x * blockIdx.x + threadIdx.x;
+    int x = xStart + tIndex % width;
+    int y = yStart + tIndex / width;
+    int index = x + y * const_params.screenW;
 
-    if (index >= const_params.screenW * const_params.screenH) {
+    if (tIndex >= width * height || index > const_params.screenW * const_params.screenH) {
         return;
     }
 
     curandState s;
     curand_init((unsigned int)index, 0, 0, &s);
-
-    int x = index % const_params.screenW;
-    int y = index / const_params.screenW;
 
     float3 spec = tracePixel(&s, x, y);
 
