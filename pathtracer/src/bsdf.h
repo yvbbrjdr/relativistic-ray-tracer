@@ -10,8 +10,13 @@
 
 #include "sampler.h"
 #include "image.h"
-
+#include "lightspectrum.h"
+#include <iostream>
+#include <string>
+#include <valarray>
 #include <algorithm>
+
+using namespace std;
 
 namespace CGL {
 
@@ -68,6 +73,10 @@ class BSDF {
    */
   virtual Spectrum f (const Vector3D& wo, const Vector3D& wi) = 0;
 
+  virtual LightSpectrum spectrum_f(const Vector3D &wo, const Vector3D& wi) = 0;
+
+  virtual LightSpectrum sample_spectrum_f(const Vector3D& wo, Vector3D* wi, float* pdf) = 0;
+
   /**
    * Evaluate BSDF.
    * Given the outgoing light direction wo, compute the incident light
@@ -79,14 +88,14 @@ class BSDF {
    * \param pdf address to store the pdf of the output incident direction
    * \return reflectance in the output incident and given outgoing directions
    */
-  virtual Spectrum sample_f (const Vector3D& wo, Vector3D* wi, float* pdf) = 0;
+  virtual LightSpectrum sample_f (const Vector3D& wo, Vector3D* wi, float* pdf) = 0;
 
   /**
    * Get the emission value of the surface material. For non-emitting surfaces
    * this would be a zero energy spectrum.
    * \return emission spectrum of the surface material
    */
-  virtual Spectrum get_emission () const = 0;
+  virtual LightSpectrum get_emission () const = 0;
 
   /**
    * If the BSDF is a delta distribution. Materials that are perfectly specular,
@@ -121,8 +130,10 @@ class DiffuseBSDF : public BSDF {
   DiffuseBSDF(const Spectrum& a) : reflectance(a) { }
 
   Spectrum f(const Vector3D& wo, const Vector3D& wi);
-  Spectrum sample_f(const Vector3D& wo, Vector3D* wi, float* pdf);
-  Spectrum get_emission() const { return Spectrum(); }
+  LightSpectrum spectrum_f(const Vector3D &wo, const Vector3D& wi);
+  LightSpectrum sample_f(const Vector3D& wo, Vector3D* wi, float* pdf);
+  LightSpectrum sample_spectrum_f(const Vector3D& wo, Vector3D* wi, float* pdf);
+  LightSpectrum get_emission() const { return LightSpectrum();}
   bool is_delta() const { return false; }
 
 private:
@@ -141,8 +152,10 @@ class MirrorBSDF : public BSDF {
   MirrorBSDF(const Spectrum& reflectance) : reflectance(reflectance) { }
 
   Spectrum f(const Vector3D& wo, const Vector3D& wi);
-  Spectrum sample_f(const Vector3D& wo, Vector3D* wi, float* pdf);
-  Spectrum get_emission() const { return Spectrum(); }
+  LightSpectrum spectrum_f(const Vector3D &wo, const Vector3D& wi) {return LightSpectrum();}
+  LightSpectrum sample_f(const Vector3D& wo, Vector3D* wi, float* pdf);
+  LightSpectrum sample_spectrum_f(const Vector3D& wo, Vector3D* wi, float* pdf) {return LightSpectrum();}
+  LightSpectrum get_emission() const { return LightSpectrum(); }
   bool is_delta() const { return true; }
 
 private:
@@ -179,8 +192,10 @@ class MicrofacetBSDF : public BSDF {
   double D(const Vector3D& h);
 
   Spectrum f(const Vector3D& wo, const Vector3D& wi);
-  Spectrum sample_f(const Vector3D& wo, Vector3D* wi, float* pdf);
-  Spectrum get_emission() const { return Spectrum(); }
+  LightSpectrum spectrum_f(const Vector3D &wo, const Vector3D& wi) {return LightSpectrum();}
+  LightSpectrum sample_f(const Vector3D& wo, Vector3D* wi, float* pdf);
+  LightSpectrum get_emission() const { return LightSpectrum(); }
+  LightSpectrum sample_spectrum_f(const Vector3D& wo, Vector3D* wi, float* pdf) {return LightSpectrum();}
   bool is_delta() const { return false; }
 
 private:
@@ -200,8 +215,10 @@ class RefractionBSDF : public BSDF {
     : transmittance(transmittance), roughness(roughness), ior(ior) { }
 
   Spectrum f(const Vector3D& wo, const Vector3D& wi);
-  Spectrum sample_f(const Vector3D& wo, Vector3D* wi, float* pdf);
-  Spectrum get_emission() const { return Spectrum(); }
+  LightSpectrum spectrum_f(const Vector3D &wo, const Vector3D& wi) {return LightSpectrum();}
+  LightSpectrum sample_spectrum_f(const Vector3D& wo, Vector3D* wi, float* pdf) {return LightSpectrum();}
+  LightSpectrum sample_f(const Vector3D& wo, Vector3D* wi, float* pdf);
+  LightSpectrum get_emission() const { return LightSpectrum(); }
   bool is_delta() const { return true; }
 
  private:
@@ -224,8 +241,10 @@ class GlassBSDF : public BSDF {
     roughness(roughness), ior(ior) { }
 
   Spectrum f(const Vector3D& wo, const Vector3D& wi);
-  Spectrum sample_f(const Vector3D& wo, Vector3D* wi, float* pdf);
-  Spectrum get_emission() const { return Spectrum(); }
+  LightSpectrum spectrum_f(const Vector3D &wo, const Vector3D& wi) {return LightSpectrum();}
+  LightSpectrum sample_spectrum_f(const Vector3D& wo, Vector3D* wi, float* pdf) {return LightSpectrum();}
+  LightSpectrum sample_f(const Vector3D& wo, Vector3D* wi, float* pdf);
+  LightSpectrum get_emission() const { return LightSpectrum(); }
   bool is_delta() const { return true; }
 
  private:
@@ -246,8 +265,12 @@ class EmissionBSDF : public BSDF {
   EmissionBSDF(const Spectrum& radiance) : radiance(radiance) { }
 
   Spectrum f(const Vector3D& wo, const Vector3D& wi);
-  Spectrum sample_f(const Vector3D& wo, Vector3D* wi, float* pdf);
-  Spectrum get_emission() const { return radiance; }
+  LightSpectrum spectrum_f(const Vector3D &wo, const Vector3D& wi) {return LightSpectrum(valarray<double>(0.78, DEFAULT_NUM));}
+  LightSpectrum sample_spectrum_f(const Vector3D& wo, Vector3D* wi, float* pdf) {return LightSpectrum();}
+  LightSpectrum sample_f(const Vector3D& wo, Vector3D* wi, float* pdf);
+  LightSpectrum get_emission() const {
+    return flourescent;
+  }
   bool is_delta() const { return false; }
 
  private:

@@ -37,6 +37,7 @@ if(BUILD_3-1)
         bvh.cpp
         pathtracer.cpp
         part1_code.cpp
+	lightspectrum.cpp
 
         # misc
         misc/sphere_drawing.cpp
