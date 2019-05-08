@@ -35,10 +35,9 @@ Spectrum MirrorBSDF::f(const Vector3D& wo, const Vector3D& wi) {
 }
 
 LightSpectrum MirrorBSDF::sample_f(const Vector3D& wo, Vector3D* wi, float* pdf) {
-  return LightSpectrum();
-  // reflect(wo, wi);
-  // *pdf = 1.0;
-  // return reflectance / abs_cos_theta(*wi);
+  reflect(wo, wi);
+  *pdf = 1.0;
+  return LightSpectrum(DEFAULT_NUM, DEFAULT_MIN, DEFAULT_MAX, valarray<double>(1.0, DEFAULT_NUM)) / abs_cos_theta(*wi);
 }
 
 // Microfacet BSDF //
@@ -114,32 +113,31 @@ Spectrum GlassBSDF::f(const Vector3D& wo, const Vector3D& wi) {
 }
 
 LightSpectrum GlassBSDF::sample_f(const Vector3D& wo, Vector3D* wi, float* pdf) {
-  return LightSpectrum();
-  // if (refract(wo, wi, ior)) {
-  //   double R0 = (1 - ior) / (1 + ior);
-  //   R0 *= R0;
-  //   double t = (1 - abs_cos_theta(*wi)),
-  //          t2 = t * t,
-  //          t4 = t2 * t2,
-  //          R = R0 + (1 - R0) * t4 * t;
-  //   if (coin_flip(R)) {
-  //     reflect(wo, wi);
-  //     *pdf = R;
-  //     return R * reflectance / abs_cos_theta(*wi);
-  //   } else {
-  //     double eta;
-  //     if (wo.z > 0)
-  //       eta = 1 / ior;
-  //     else
-  //       eta = ior;
-  //     *pdf = 1 - R;
-  //     return (1 - R) * transmittance / (abs_cos_theta(*wi) * eta * eta);
-  //   }
-  // } else {
-  //   reflect(wo, wi);
-  //   *pdf = 1.0;
-  //   return reflectance / abs_cos_theta(*wi);
-  // }
+  if (refract(wo, wi, ior)) {
+    double R0 = (1 - ior) / (1 + ior);
+    R0 *= R0;
+    double t = (1 - abs_cos_theta(*wi)),
+           t2 = t * t,
+           t4 = t2 * t2,
+           R = R0 + (1 - R0) * t4 * t;
+    if (coin_flip(R)) {
+      reflect(wo, wi);
+      *pdf = R;
+      return LightSpectrum(DEFAULT_NUM, DEFAULT_MIN, DEFAULT_MAX, valarray<double>(R, DEFAULT_NUM)) / abs_cos_theta(*wi);
+    } else {
+      double eta;
+      if (wo.z > 0)
+        eta = 1 / ior;
+      else
+        eta = ior;
+      *pdf = 1 - R;
+      return LightSpectrum(DEFAULT_NUM, DEFAULT_MIN, DEFAULT_MAX, valarray<double>(1 - R, DEFAULT_NUM)) / (abs_cos_theta(*wi) * eta * eta);
+    }
+  } else {
+    reflect(wo, wi);
+    *pdf = 1.0;
+    return LightSpectrum(DEFAULT_NUM, DEFAULT_MIN, DEFAULT_MAX, valarray<double>(1.0, DEFAULT_NUM)) / abs_cos_theta(*wi);
+  }
 }
 
 void BSDF::reflect(const Vector3D& wo, Vector3D* wi) {

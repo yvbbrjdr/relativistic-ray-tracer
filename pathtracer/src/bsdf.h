@@ -155,7 +155,7 @@ class MirrorBSDF : public BSDF {
   Spectrum f(const Vector3D& wo, const Vector3D& wi);
   LightSpectrum spectrum_f(const Vector3D &wo, const Vector3D& wi) {return LightSpectrum();}
   LightSpectrum sample_f(const Vector3D& wo, Vector3D* wi, float* pdf);
-  LightSpectrum sample_spectrum_f(const Vector3D& wo, Vector3D* wi, float* pdf) {return LightSpectrum();}
+  LightSpectrum sample_spectrum_f(const Vector3D& wo, Vector3D* wi, float* pdf) {return sample_f(wo, wi, pdf);}
   LightSpectrum get_emission() const { return LightSpectrum(); }
   bool is_delta() const { return true; }
 
@@ -243,7 +243,7 @@ class GlassBSDF : public BSDF {
 
   Spectrum f(const Vector3D& wo, const Vector3D& wi);
   LightSpectrum spectrum_f(const Vector3D &wo, const Vector3D& wi) {return LightSpectrum();}
-  LightSpectrum sample_spectrum_f(const Vector3D& wo, Vector3D* wi, float* pdf) {return LightSpectrum();}
+  LightSpectrum sample_spectrum_f(const Vector3D& wo, Vector3D* wi, float* pdf) {return sample_f(wo, wi, pdf);}
   LightSpectrum sample_f(const Vector3D& wo, Vector3D* wi, float* pdf);
   LightSpectrum get_emission() const { return LightSpectrum(); }
   bool is_delta() const { return true; }
