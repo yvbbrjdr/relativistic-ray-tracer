@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright 1993-2015 NVIDIA Corporation.  All rights reserved.
  *
  * Please refer to the NVIDIA end user license agreement (EULA) associated
@@ -21,11 +21,84 @@
 
 // For the CUDA runtime routines (prefixed with "cuda_")
 #include <cuda_runtime.h>
+#include "kernel.h"
+
+
+extern __global__ void addIntensitiesCUDA(float* a, float* b, float* dst, int n)
+{
+	int i = blockIdx.x * blockDim.x + threadIdx.x;
+	if (i < n)
+		dst[i] = a[i] + b[i];
+}
+
+extern __global__ void substractIntensitiesCUDA(float* a, float* b, float* dst, int n)
+{
+
+	int i = blockIdx.x * blockDim.x + threadIdx.x;
+	if (i < n)
+		dst[i] = a[i] - b[i];
+}
+
+extern __global__ void mulIntensitiesCUDA(float* a, float* b, float* dst, int n)
+{
+
+	int i = blockIdx.x * blockDim.x + threadIdx.x;
+	if (i < n)
+		dst[i] = a[i] * b[i];
+}
+
+
+extern __global__ void divIntensitiesCUDA(float* a, float* b, float* dst, int n)
+{
+
+	int i = blockIdx.x * blockDim.x + threadIdx.x;
+	if (i < n)
+		dst[i] = a[i] / b[i];
+}
+
+
+extern __global__ void mulIntensitiesCUDA(float* a, float s, float* dst, int n)
+{
+
+	int i = blockIdx.x * blockDim.x + threadIdx.x;
+	if (i < n)
+		dst[i] = a[i] * s;
+}
+
+
+extern __global__ void divIntensitiesCUDA(float* a, float s, float* dst, int n)
+{
+
+	int i = blockIdx.x * blockDim.x + threadIdx.x;
+	if (i < n)
+		dst[i] = a[i] * s;
+}
 
 extern __global__ void add(int a, int b, int *c)
 {
 	*c = a + b;
 	*c = 7;
+}
+
+void addIntensities(float* a, float *b, float *dst, int n)
+{
+	float* dev_a, *dev_b, *dev_dst;
+
+	cudaMalloc((void **) &dev_a, n * sizeof(float));
+	cudaMalloc((void **) &dev_b, n * sizeof(float));
+	cudaMalloc((void **) &dev_dst, n * sizeof(float));
+
+	cudaMemcpy(dev_a, a, n * sizeof(float), cudaMemcpyHostToDevice);
+	cudaMemcpy(dev_b, b, n * sizeof(float), cudaMemcpyHostToDevice);
+	cudaMemcpy(dev_dst, dst, n * sizeof(float), cudaMemcpyHostToDevice);
+
+	addIntensitiesCUDA<<<n, 1>>>(dev_a, dev_b, dev_dst, n);
+
+	cudaMemcpy(dst, dev_dst, n * sizeof(float), cudaMemcpyDeviceToHost);
+
+	cudaFree(dev_a);
+	cudaFree(dev_b);
+	cudaFree(dev_dst);
 }
 
 int test(){
