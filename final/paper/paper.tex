@@ -1,0 +1,249 @@
+%
+% The first command in your LaTeX source must be the \documentclass command.
+\documentclass[sigconf]{acmart}
+
+%
+% defining the \BibTeX command - from Oren Patashnik's original BibTeX documentation.
+\def\BibTeX{{\rm B\kern-.05em{\sc i\kern-.025em b}\kern-.08emT\kern-.1667em\lower.7ex\hbox{E}\kern-.125emX}}
+    
+% Rights management information. 
+% This information is sent to you when you complete the rights form.
+% These commands have SAMPLE values in them; it is your responsibility as an author to replace
+% the commands and values with those provided to you when you complete the rights form.
+%
+% These commands are for a PROCEEDINGS abstract or paper.
+
+\copyrightyear{2019}
+\acmYear{2019}
+\setcopyright{acmlicensed}
+\acmConference[CS 184 Sp19]{CS 184 Sp19: Final Project}{May 14, 2019}{Berkeley, CA}
+\acmBooktitle{CS 184 Sp19: Final Project, May 14, 2019, Berkeley, CA}
+\acmDOI{}
+
+%
+% These commands are for a JOURNAL article.
+%\setcopyright{acmcopyright}
+%\acmJournal{TOG}
+%\acmYear{2018}\acmVolume{37}\acmNumber{4}\acmArticle{111}\acmMonth{8} 
+%\acmDOI{10.1145/1122445.1122456}
+
+%
+% Submission ID. 
+% Use this when submitting an article to a sponsored event. You'll receive a unique submission ID from the organizers
+% of the event, and this ID should be used as the parameter to this command.
+%\acmSubmissionID{123-A56-BU3}
+
+%
+% The majority of ACM publications use numbered citations and references. If you are preparing content for an event
+% sponsored by ACM SIGGRAPH, you must use the "author year" style of citations and references. Uncommenting
+% the next command will enable that style.
+%\citestyle{acmauthoryear}
+
+%
+% end of the preamble, start of the body of the document source.
+\begin{document}
+
+%
+% The "title" command has an optional parameter, allowing the author to define a "short title" to be used in page headers.
+% The "title" command has an optional parameter, allowing the author to define a "short title" to be used in page headers.
+\title{Diffuse Relativistic Black Hole in the Cornell Box}
+
+%
+% The "author" command and its associated commands are used to define the authors and their affiliations.
+% Of note is the shared affiliation of the first two authors, and the "authornote" and "authornotemark" commands
+% used to denote shared contribution to the research.
+\author{Andrew Aikawa - 284A}
+
+\author{Yuan Zhou - 184}
+
+\author{Weylan Wang - 184}
+
+% The abstract is a short summary of the work to be presented in the article.
+\begin{abstract}
+We report a ray tracing algorithm in which we can quantitatively generate realistic images in a scene with a black hole.  The problem of illustrating what a black hole would look like has been explored previously in works such as the movie Interstellar\cite{james_tunzelmann_franklin_thorne_2015}. However, almost all of these assume purely emissive light sources and very distant light sources that would be represented as environment maps.  In this paper, we present a ray tracer for a scene with a Schwarzchild black hole in diffuse lighting conditions.
+\end{abstract}
+
+
+%
+% Keywords. The author(s) should pick words that accurately describe the work being
+% presented. Separate the keywords with commas.
+\keywords{ray tracing, black holes, general relativity}
+
+%
+% A "teaser" image appears between the author and affiliation information and the body 
+% of the document, and typically spans the page. 
+\begin{teaserfigure}
+  \includegraphics[width=\textwidth]{dragon.png}
+  \caption{Gold Dragon in Cornell Box Containing a Black Hole}
+  \Description{Gold Dragon in Cornell Box Containing a Black Hole}
+  \label{fig:teaser}
+\end{teaserfigure}
+
+%
+% This command processes the author and affiliation and title information and builds
+% the first part of the formatted document.
+\maketitle
+
+\section{Ray Tracing in General Relativity}
+
+Einstein's field equations predict changes in the spacetime curvature in the vicinity of a black hole. The metric tensor, $g_{\mu\nu}$, the solution to the field equations, determines the metric, how 'distance' is measured in spacetime. The path taken by a ray of light is determined by Fermat's principle, dictating that the ray will take whatever path takes the ray from point A to point B with the least action, a quantity describing how much metric distance the ray has traveled. In a typical Euclidean metric space, where the metric is uniform over all space and in a medium with a uniform index of refraction, rays will trace lines, a central assumption in traditional ray tracing algorithms. However, in the presence of a massive body, a spatially varying metric will cause light rays to curve in order to minimize the action, how much spacetime 'distance' the ray travels.  We examine the particular case of a Schwarzchild black hole, a black hole with no spin for which the metric is analytic.
+
+\section{Photon Orbits in Schwarzchild Spacetime}
+
+Due to the spherical symmetry of the Schwarzchild spacetime, photon orbitals are confined to a plane.  The equations of motion are found by minimizing the action by means of Euler-Lagrange equations which yield in geometrized units\cite{drakos_moore}:
+
+\begin{displaymath}
+  u" + u - \frac{3r_su^2}{2} = 0
+\end{displaymath}
+
+$r_s$ being the Schwarzchild radius, a characteristic quantity of a black hole which is solely determined by its mass, and $u(\theta) = 1/r(\theta)$, where $r$ is the polar coordinate of the orbit and $\theta$ the angular coordinate of the orbit.  This equation has no closed form solutions and in general can only be solved numerically.  For our ray tracer, we used a 4th order Runge-Kutta method\cite{colostate}.
+
+\section{Ray Casting Algorithm}
+
+Our ray casting algorithm works by treating the geodesic paths as a piece wise connection of small linear rays. By numerically integrating the photon orbital equation, we get the next point on the geodesic, which gives us a ray defined by the line segment connecting the original point to the next point. Since we are building on top of our project 3\cite{ng_ragan-kelley} and photon orbit equation is in terms of polar coordinates, we needed to convert between black hole polar coordinates and the world space.
+
+\begin{figure}[h]
+  \centering
+  \includegraphics[width=\linewidth]{coord.png}
+  \caption{Coordinate Systems.  A depiction of the black hole coordinate system defined by the ray origin, direction, and black hole position.  The primed coordinates dictate the black hole polar coordinates while the unprimed are the world space coordinates.  Finding the black hole coordinate unit vectors is done by calculating the difference vector of the ray origin and the black hole for the x-axis and taking the orthogonal projection of the direction vector against the difference vector as the y-axis}
+  \Description{A depiction of the black hole polar coordinates versus the world space coordinates.}
+\end{figure}
+
+The plane of the orbit is defined by the plane containing the black hole position, ray origin, and ray initial direction.  To form the black hole centered coordinates, define the unit vector pointing from the black hole to the ray origin as the x-axis and the orthogonal projection of the initial ray direction as the y-direction.  The initial conditions are given by:
+
+\begin{displaymath}
+  u(\theta = 0) = \frac{1}{r(\theta = 0)},
+  u'(\theta = 0) = -\frac{1}{y'r(\theta = 0)}
+\end{displaymath}
+
+where $y'$ is the slope of the ray direction in the black hole centered coordinates.  The second equation was obtained by inverting the equation for the slope of a polar curve for $r'$ and differentiating $u = 1/r$ [Appendix A.1]. At each step of the numerical integration, we check if the micro-ray formed by each step intersects with the scene and if so, to return the outgoing spectrum at that point through uniform hemisphere sampling.
+
+\begin{figure}[h]
+  \centering
+  \includegraphics[width=\linewidth]{microrays.png}
+  \caption{Micro Ray Intersection}
+  \Description{}
+\end{figure}
+
+\begin{figure}[h]
+  \centering
+  \includegraphics[width=\linewidth]{lense.png}
+  \caption{Black hole in Cornell Box. Note the bright spot on the blue wall as a result of the gravitational lensing}
+  \Description{Black hole in Cornell Box. Note the bright spot on the blue wall as a result of the gravitational lensing}
+\end{figure}
+
+\section{Emergent Phenomena}
+
+In our images, we reproduce the notable features that have been reported in other black hole renderers. Perhaps the most iconic feature of the black hole that we reproduced in our images is the circular distortion around the black hole due to the bending of light.
+\begin{figure}[h]
+  \centering
+  \includegraphics[width=\linewidth]{bunny.png}
+  \caption{CBbunny with black hole in between the bunny and camera.  The inverted view of the room appears in the inner region of the distortion due to more intense ray bending.}
+  \Description{}
+\end{figure}
+In addition, we also find that there is a circular region immediately around the black hole with the view of the room inverted, a result of intense bending near the black hole.  Another very important feature which is of importance in astronomy, is the lensing effect of the black hole.  Light from the lamp in the scene becomes focused by the black hole and converges onto the surfaces behind the black hole with respect to the light source, manifesting as an increase in the intensity of the lighting.
+
+\begin{figure}[h]
+  \centering
+  \includegraphics[width=\linewidth]{mirrors_nohole.png}
+  \caption{Default CBspheres}
+  \Description{}
+\end{figure}
+
+\begin{figure}[h]
+  \centering
+  \includegraphics[width=\linewidth]{mirrors.png}
+  \caption{CBspheres with blackhole.  Notice the appearance of the mirror sphere image in the mirror sphere due to the ray bounce off of the sphere being bent back into the sphere and then into the camera}
+  \Description{}
+\end{figure}
+
+Again, we see the intense interaction of light nearby the blackhole in the case of the mirror sphere, where an image of mirror sphere appears in its reflection due to the bending light bounced off of the sphere back onto the sphere in Figure 7.  Light scattering is evident in the halo shaped bright region on the back wall due from the bending of light reflected off of the mirror and glass spheres and towards the blackhole.
+
+\begin{figure}[h]
+  \centering
+  \includegraphics[width=\linewidth]{secondary.png}
+  \caption{Black hole causing secondary light focus spot on the upper half of the green wall due to lensing of light reflected off of the mirror sphere.  Also light decoherence of the glass ball lensing due to scattering from the black hole}
+  \Description{}
+\end{figure}
+
+In Figure 8, we again see the effects of lensing but this time due to reflected light from the mirror sphere being focused by the black hole.  Light is also scattered by the black hole resulting in the defocusing of the original two bright spots of the glass sphere.
+
+\section{Gravitational Redshift}
+
+The distortion of spacetime induces changes in the local speed of light. Due to the wave nature of light, light spectra undergo a wavelength shift in a phenomenon known as gravitational redshift. Emission near the black hole becomes longer in wavelength as it moves away from the black hole and is described by the equation\cite{wikipedia_2019}:
+
+\begin{displaymath}
+  \frac{\lambda_1}{\lambda_2} = [(1 - r_s / R_1)(1 - r_s/R_2)]^{1/2}
+\end{displaymath}
+
+where $R_1, R2$ are the spatial distances of the emitter and observer respectively relative to the black hole and $\lambda_1, \lambda_2$ are the emitted and observed wavelength respectively. We then converted from our wavelength channels to CIE 1931 XYZ using an analytic approximation of the tristimulus values\cite{wyman_sloan_shirley_2013} and arbitrarily normalized XYZ values to adjust for brightness so that upon conversion to RGB, colors were not clipped. For conversion to RGB, we used  $M^{-1}$ for CIE XYZ 1931 to sRGB\cite{wikipedia_2019_3}.
+
+\begin{figure}[h]
+  \centering
+  \includegraphics[width=\linewidth]{blueshift.png}
+  \caption{Black hole passing nearby underneath the camera.  The cameras location closer to the black hole than the scene causes light from the scene to be blueshifted relative to their local emission spectrum, manifesting as the normally right green wall appearing blue and the normally red wall appearing yellowish orange}
+  \Description{}
+\end{figure}
+
+\begin{figure}[h]
+  \centering
+  \includegraphics[width=\linewidth]{CBspheres_lambertian_screenshot_4-28_20-52-32.png}
+  \caption{Black hole with redshift.  Note that the spheres appear black due to visible wavelengths being pushed out the visible range.  In addition, parts of the green wall appear more yellow-orange and the red wall more off red-grayish as a result of the redshift}
+  \Description{}
+\end{figure}
+
+\begin{figure}[h]
+  \centering
+  \includegraphics[width=\linewidth]{sphereright.png}
+  \caption{Black hole embedded in the green wall, shifting the surface color to red.}
+  \Description{}
+\end{figure}
+
+In order to implement redshift, we took spectral data for the Cornell box and used spectral intensity values ranging from 400nm to 700nm with 4nm resolution\cite{cornell}.  Our simulation uses the surface reflectances for the red, white, and green walls with a tungsten flood light with a UV filter and diffusing glass plate as our emitter.
+
+Redshift is evident in Figures 10 \& 11 where the objects nearby the black hole appear red or black, with black objects being the result of shift of the spectrum to the infrared region and out of the visible spectrum.  In Figure 9, the resulting blueshift from the camera being positioned near the blackhole is most evident from the change of color in the green and red walls to blue and orange respectively.
+
+\section{Acknowledgments}
+
+Special thanks to the Open Computing Facility (ocf.io) for letting us run our CPU intensive ray tracer. And Ren Ng for answering our questions regarding color spaces and where to find spectral data.
+
+\bibliographystyle{ACM-Reference-Format}
+\bibliography{paper}
+
+\appendix
+
+\section{Appendix}
+
+\subsection{Initial Value Derivation}
+
+This is the derivation of $u'(\theta = 0)$ given, the initial ray direction, $y'$, and distance, $r(\theta = 0)$:
+
+\begin{displaymath}
+  u = \frac{1}{r}
+\end{displaymath}
+
+Differentiating both sides w.r.t. $\theta$
+
+\begin{displaymath}
+  u' = -\frac{r'}{r^2}
+\end{displaymath}
+
+The slope of a tangent to a polar curve is given by\cite{wikipedia_2019_2}:
+
+\begin{displaymath}
+  y' = \frac{r'\sin(\theta) + r\cos(\theta)}{r'\cos(\theta) - r\sin(\theta)}
+\end{displaymath}
+
+For $\theta = 0$, this reduces to
+
+\begin{displaymath}
+  y' = \frac{r}{r'}
+\end{displaymath}
+
+Substituting, $u'$ for $r'$
+
+\begin{displaymath}
+  y' = \frac{r}{-u'r^2} \implies u' = -\frac{1}{y'r}
+\end{displaymath}
+
+\end{document}
